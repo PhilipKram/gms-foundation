@@ -1,4 +1,4 @@
-module github.com/PhilipKram/GMS-Foundations
+module github.com/PhilipKram/gms-foundation
 
 go 1.21
 

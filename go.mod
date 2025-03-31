@@ -1,12 +1,11 @@
 module github.com/PhilipKram/gms-foundation
 
 go 1.21
-
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/prometheus/client_golang v1.21.1
 	github.com/rs/zerolog v1.34.0
-	google.golang.org/protobuf v1.36.5
+	google.golang.org/protobuf v1.36.6
 )
 
 require (

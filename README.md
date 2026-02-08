@@ -196,6 +196,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 See [LICENSE](LICENSE) file for details.
 
-## Example Application
-
-See the integration in the [memshelf platform](https://github.com/memshelf/platform) for a real-world usage example.

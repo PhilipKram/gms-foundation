@@ -89,7 +89,8 @@ func TestOptionalStringSlice_Set(t *testing.T) {
 }
 
 func TestOptionalStringSlice_Empty(t *testing.T) {
-	os.Unsetenv("TEST_SLICE_EMPTY")
+	t.Setenv("TEST_SLICE_EMPTY", "")
+	os.Unsetenv("TEST_SLICE_EMPTY") //nolint:errcheck
 	got := OptionalStringSlice("TEST_SLICE_EMPTY", ",", []string{"default"})
 	if len(got) != 1 || got[0] != "default" {
 		t.Errorf("expected [default], got %v", got)

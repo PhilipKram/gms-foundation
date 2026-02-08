@@ -181,10 +181,10 @@ func validateContent(data []byte, declaredType string, cat FileCategory) error {
 
 	detected := http.DetectContentType(data)
 
-	// For image categories, detected type must be a recognized image type.
+	// For image categories, detected type must exactly match the declared type.
 	if strings.HasPrefix(declaredType, "image/") {
-		if _, ok := cat.AllowedTypes[detected]; !ok {
-			return fmt.Errorf("file content does not match declared image type")
+		if detected != declaredType {
+			return fmt.Errorf("file content type %q does not match declared type %q", detected, declaredType)
 		}
 		return nil
 	}

@@ -248,7 +248,7 @@ func TestSaveFile_ImageContentMismatch(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for image content mismatch")
 	}
-	if !strings.Contains(err.Error(), "does not match declared image type") {
+	if !strings.Contains(err.Error(), "does not match declared type") {
 		t.Errorf("expected image mismatch error, got: %v", err)
 	}
 }

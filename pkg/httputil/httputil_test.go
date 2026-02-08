@@ -86,6 +86,16 @@ func TestWritePaginated(t *testing.T) {
 	}
 }
 
+func TestWriteJSON_EncodingError(t *testing.T) {
+	w := httptest.NewRecorder()
+	// Channels cannot be marshaled to JSON
+	WriteJSON(w, http.StatusOK, make(chan int))
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for encode error, got %d", http.StatusInternalServerError, w.Code)
+	}
+}
+
 func TestWriteJSON_NilValue(t *testing.T) {
 	w := httptest.NewRecorder()
 	WriteJSON(w, http.StatusOK, nil)

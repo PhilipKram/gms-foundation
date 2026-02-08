@@ -1,12 +1,15 @@
 package dbutil
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
+
+const defaultPingTimeout = 5 * time.Second
 
 // PoolConfig holds connection pool settings for a *sql.DB.
 type PoolConfig struct {
@@ -67,7 +70,10 @@ func Open(driverName, dsn string, opts ...Option) (*sql.DB, error) {
 	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
 
-	if err := db.Ping(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultPingTimeout)
+	defer cancel()
+
+	if err := db.PingContext(ctx); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("pinging database: %w", err)
 	}

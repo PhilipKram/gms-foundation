@@ -1,6 +1,7 @@
 package httputil
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 )
@@ -14,10 +15,16 @@ type PaginatedResponse struct {
 }
 
 // WriteJSON serializes v as JSON and writes it to w with the given HTTP status code.
+// If encoding fails, a 500 Internal Server Error is sent instead.
 func WriteJSON(w http.ResponseWriter, status int, v interface{}) {
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(v); err != nil {
+		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
+	_, _ = w.Write(buf.Bytes())
 }
 
 // WriteError writes a JSON error response of the form {"error": msg}.

@@ -27,7 +27,8 @@ func Optional(key, defaultValue string) string {
 }
 
 // OptionalBool returns true if the environment variable is set to
-// "true", "1", or "yes" (case-insensitive). Returns defaultValue otherwise.
+// "true", "1", or "yes" (case-insensitive), false if set to "false", "0",
+// or "no", and defaultValue for unset or unrecognized values.
 func OptionalBool(key string, defaultValue bool) bool {
 	v := os.Getenv(key)
 	if v == "" {
@@ -36,8 +37,10 @@ func OptionalBool(key string, defaultValue bool) bool {
 	switch strings.ToLower(v) {
 	case "true", "1", "yes":
 		return true
-	default:
+	case "false", "0", "no":
 		return false
+	default:
+		return defaultValue
 	}
 }
 

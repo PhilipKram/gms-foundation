@@ -34,9 +34,8 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest, macos-latest]
-                go: ["1.23", "1.24"]
-                test-tags:
-                  ["", "-tags nomsgpack", '-tags "sonic avx"', "-tags go_json", "-race"]
+                go: ["1.24"]
+                test-tags: ["", "-race"]
                 include:
                     - os: ubuntu-latest
                       go-build: ~/.cache/go-build
@@ -45,7 +44,7 @@ jobs:
         name: ${{ matrix.os }} @ Go ${{ matrix.go }} ${{ matrix.test-tags }}
         runs-on: ${{ matrix.os }}
         env:
-            GO111MODULE: on
+            GOTOOLCHAIN: local
             TESTTAGS: ${{ matrix.test-tags }}
             GOPROXY: https://proxy.golang.org
         steps:

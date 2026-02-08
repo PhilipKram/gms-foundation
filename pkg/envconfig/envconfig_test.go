@@ -115,8 +115,20 @@ func TestOptional_Empty(t *testing.T) {
 
 func TestOptionalBool_UnrecognizedValue(t *testing.T) {
 	t.Setenv("TEST_BOOL_UNKNOWN", "maybe")
-	if OptionalBool("TEST_BOOL_UNKNOWN", true) {
-		t.Error("expected false for unrecognized value 'maybe'")
+	if !OptionalBool("TEST_BOOL_UNKNOWN", true) {
+		t.Error("expected default true for unrecognized value 'maybe'")
+	}
+	if OptionalBool("TEST_BOOL_UNKNOWN", false) {
+		t.Error("expected default false for unrecognized value 'maybe'")
+	}
+}
+
+func TestOptionalBool_ExplicitFalseVariants(t *testing.T) {
+	for _, val := range []string{"false", "0", "no", "NO", "False"} {
+		t.Setenv("TEST_BOOL_EF", val)
+		if OptionalBool("TEST_BOOL_EF", true) {
+			t.Errorf("expected false for %q", val)
+		}
 	}
 }
 

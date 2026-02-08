@@ -2,6 +2,7 @@ package uploads
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,6 +27,13 @@ var minimalPNG = []byte{
 	0x00, 0x00, 0x02, 0x00, 0x01, 0xE2, 0x21, 0xBC,
 	0x33, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E,
 	0x44, 0xAE, 0x42, 0x60, 0x82,
+}
+
+// errorReader always returns an error on Read.
+type errorReader struct{}
+
+func (errorReader) Read([]byte) (int, error) {
+	return 0, fmt.Errorf("simulated read error")
 }
 
 func TestNewStorage_CreatesSubdirs(t *testing.T) {
@@ -190,6 +198,173 @@ func TestCategoryFor(t *testing.T) {
 	}
 	if got := s.CategoryFor("text/plain"); got != "" {
 		t.Errorf("expected empty string, got %q", got)
+	}
+}
+
+func TestSaveFile_Audio(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	// MP3 files start with ID3 tag or 0xFF 0xFB sync bytes.
+	// http.DetectContentType returns "application/octet-stream" for most audio,
+	// which is fine — audio validation only rejects clearly wrong categories.
+	mp3Header := []byte("ID3\x04\x00\x00\x00\x00\x00\x00")
+	mp3Data := make([]byte, 100)
+	copy(mp3Data, mp3Header)
+
+	relPath, err := s.SaveFile(bytes.NewReader(mp3Data), "audio/mpeg")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.HasPrefix(relPath, "audio/") {
+		t.Errorf("expected audio/ prefix, got %q", relPath)
+	}
+	if !strings.HasSuffix(relPath, ".mp3") {
+		t.Errorf("expected .mp3 suffix, got %q", relPath)
+	}
+}
+
+func TestSaveFile_AudioContentMismatch(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	// Declare audio but send image content — should be rejected
+	_, err := s.SaveFile(bytes.NewReader(minimalJPEG), "audio/mpeg")
+	if err == nil {
+		t.Fatal("expected error for audio content mismatch")
+	}
+	if !strings.Contains(err.Error(), "does not match declared audio type") {
+		t.Errorf("expected audio mismatch error, got: %v", err)
+	}
+}
+
+func TestSaveFile_ImageContentMismatch(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	// Declare image/jpeg but send non-image content
+	plainText := []byte("this is not an image at all, just plain text data here")
+	_, err := s.SaveFile(bytes.NewReader(plainText), "image/jpeg")
+	if err == nil {
+		t.Fatal("expected error for image content mismatch")
+	}
+	if !strings.Contains(err.Error(), "does not match declared image type") {
+		t.Errorf("expected image mismatch error, got: %v", err)
+	}
+}
+
+func TestDeleteFile_NonExistent(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	err := s.DeleteFile("images/nonexistent.jpg")
+	if err == nil {
+		t.Fatal("expected error for deleting non-existent file")
+	}
+}
+
+func TestSaveFile_ReadError(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	_, err := s.SaveFile(&errorReader{}, "image/jpeg")
+	if err == nil {
+		t.Fatal("expected error from read failure")
+	}
+	if !strings.Contains(err.Error(), "reading upload") {
+		t.Errorf("expected reading error, got: %v", err)
+	}
+}
+
+func TestDefaultImageCategory(t *testing.T) {
+	cat := DefaultImageCategory()
+	if cat.Subdir != "images" {
+		t.Errorf("expected subdir 'images', got %q", cat.Subdir)
+	}
+	if cat.MaxSize != 10<<20 {
+		t.Errorf("expected max size 10MB, got %d", cat.MaxSize)
+	}
+	if len(cat.AllowedTypes) != 4 {
+		t.Errorf("expected 4 allowed types, got %d", len(cat.AllowedTypes))
+	}
+	for _, mime := range []string{"image/jpeg", "image/png", "image/gif", "image/webp"} {
+		if _, ok := cat.AllowedTypes[mime]; !ok {
+			t.Errorf("expected %s in allowed types", mime)
+		}
+	}
+}
+
+func TestDefaultAudioCategory(t *testing.T) {
+	cat := DefaultAudioCategory()
+	if cat.Subdir != "audio" {
+		t.Errorf("expected subdir 'audio', got %q", cat.Subdir)
+	}
+	if cat.MaxSize != 50<<20 {
+		t.Errorf("expected max size 50MB, got %d", cat.MaxSize)
+	}
+	if len(cat.AllowedTypes) != 5 {
+		t.Errorf("expected 5 allowed types, got %d", len(cat.AllowedTypes))
+	}
+}
+
+func TestSaveFile_UniqueFilenames(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	p1, _ := s.SaveFile(bytes.NewReader(minimalJPEG), "image/jpeg")
+	p2, _ := s.SaveFile(bytes.NewReader(minimalJPEG), "image/jpeg")
+	if p1 == p2 {
+		t.Error("expected unique filenames for each save")
+	}
+}
+
+func TestSaveFile_WriteFailure(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	// Remove the images subdir to cause os.WriteFile to fail
+	if err := os.Remove(filepath.Join(dir, "images")); err != nil { //nolint:errcheck
+		t.Skipf("could not remove images dir: %v", err)
+	}
+
+	_, err := s.SaveFile(bytes.NewReader(minimalJPEG), "image/jpeg")
+	if err == nil {
+		t.Fatal("expected error when write directory is missing")
+	}
+	if !strings.Contains(err.Error(), "writing file") {
+		t.Errorf("expected 'writing file' error, got: %v", err)
+	}
+}
+
+func TestDeleteFile_CleanPath(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	// Save a file, then delete it using a path with extra slashes
+	relPath, _ := s.SaveFile(bytes.NewReader(minimalJPEG), "image/jpeg")
+	// Add redundant slashes — filepath.Clean should normalize
+	messyPath := "images//" + filepath.Base(relPath)
+	if err := s.DeleteFile(messyPath); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCategoryFor_AllDefaultTypes(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := NewStorage(dir)
+
+	imageMimes := []string{"image/jpeg", "image/png", "image/gif", "image/webp"}
+	for _, m := range imageMimes {
+		if got := s.CategoryFor(m); got != "images" {
+			t.Errorf("CategoryFor(%q) = %q, want 'images'", m, got)
+		}
+	}
+
+	audioMimes := []string{"audio/mpeg", "audio/wav", "audio/x-m4a", "audio/mp4", "audio/ogg"}
+	for _, m := range audioMimes {
+		if got := s.CategoryFor(m); got != "audio" {
+			t.Errorf("CategoryFor(%q) = %q, want 'audio'", m, got)
+		}
 	}
 }
 

@@ -56,6 +56,34 @@ func TestHashWithCost(t *testing.T) {
 	}
 }
 
+func TestHashWithCost_InvalidCost(t *testing.T) {
+	_, err := HashWithCost("test", 100) // cost too high
+	if err == nil {
+		t.Fatal("expected error for invalid cost")
+	}
+}
+
+func TestHashWithCost_DefaultCost(t *testing.T) {
+	hash, err := HashWithCost("test", DefaultCost)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	cost, err := bcrypt.Cost([]byte(hash))
+	if err != nil {
+		t.Fatalf("reading cost: %v", err)
+	}
+	if cost != DefaultCost {
+		t.Errorf("expected cost %d, got %d", DefaultCost, cost)
+	}
+}
+
+func TestCheck_InvalidHash(t *testing.T) {
+	err := Check("not-a-valid-hash", "password")
+	if err == nil {
+		t.Fatal("expected error for invalid hash")
+	}
+}
+
 func TestHash_EmptyPassword(t *testing.T) {
 	hash, err := Hash("")
 	if err != nil {

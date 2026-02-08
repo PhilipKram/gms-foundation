@@ -78,6 +78,21 @@ func TestMultipleOptions(t *testing.T) {
 	}
 }
 
+func TestOpen_WithOptions(t *testing.T) {
+	// sql.Open for mysql succeeds even with bad DSN; only Ping fails.
+	// This tests that options are applied before the ping attempt.
+	_, err := Open("mysql", "bad:dsn@tcp(localhost:1)/db",
+		WithMaxOpenConns(5),
+		WithMaxIdleConns(2),
+		WithConnMaxLifetime(1*time.Minute),
+		WithConnMaxIdleTime(30*time.Second),
+	)
+	// Should fail at ping, proving the code path through options + pool config ran
+	if err == nil {
+		t.Fatal("expected error from ping")
+	}
+}
+
 func TestOpen_InvalidDriver(t *testing.T) {
 	_, err := Open("nosuchdriver", "dsn")
 	if err == nil {

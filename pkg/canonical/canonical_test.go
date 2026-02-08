@@ -115,6 +115,49 @@ func TestCanonicalize(t *testing.T) {
 	}
 }
 
+func TestCanonicalize_NoHost(t *testing.T) {
+	_, _, err := Canonicalize("https:///path/only")
+	if err == nil {
+		t.Fatal("expected error for URL with no host")
+	}
+}
+
+func TestCanonicalize_MultipleValuesForSameKey(t *testing.T) {
+	got, _, err := Canonicalize("https://example.com/?a=2&a=1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Values for same key should be sorted
+	want := "https://example.com/?a=1&a=2"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestCanonicalize_HttpScheme(t *testing.T) {
+	got, _, err := Canonicalize("HTTP://Example.COM/path")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got != "http://example.com/path" {
+		t.Errorf("got %q, want %q", got, "http://example.com/path")
+	}
+}
+
+func TestCanonicalize_AllKnownTrackingParams(t *testing.T) {
+	// Test a selection of known tracking params that aren't utm_*
+	params := []string{"gclid", "fbclid", "msclkid", "twclid", "_ga", "_gl", "si", "mc_cid", "yclid"}
+	for _, p := range params {
+		got, _, err := Canonicalize("https://example.com/?" + p + "=val&keep=1")
+		if err != nil {
+			t.Fatalf("unexpected error for param %s: %v", p, err)
+		}
+		if got != "https://example.com/?keep=1" {
+			t.Errorf("param %s not stripped: got %q", p, got)
+		}
+	}
+}
+
 func TestCanonicalize_HashConsistency(t *testing.T) {
 	_, h1, _ := Canonicalize("https://example.com/page?b=2&a=1")
 	_, h2, _ := Canonicalize("https://EXAMPLE.COM/page?a=1&b=2")

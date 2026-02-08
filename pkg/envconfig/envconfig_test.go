@@ -3,6 +3,7 @@ package envconfig
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -102,6 +103,48 @@ func TestOptionalStringSlice_AllWhitespace(t *testing.T) {
 	got := OptionalStringSlice("TEST_SLICE_WS", ",", []string{"fallback"})
 	if len(got) != 1 || got[0] != "fallback" {
 		t.Errorf("expected [fallback] for all-whitespace input, got %v", got)
+	}
+}
+
+func TestOptional_Empty(t *testing.T) {
+	t.Setenv("TEST_OPT_EMPTY", "")
+	if v := Optional("TEST_OPT_EMPTY", "fallback"); v != "fallback" {
+		t.Errorf("expected 'fallback' for empty var, got %q", v)
+	}
+}
+
+func TestOptionalBool_UnrecognizedValue(t *testing.T) {
+	t.Setenv("TEST_BOOL_UNKNOWN", "maybe")
+	if OptionalBool("TEST_BOOL_UNKNOWN", true) {
+		t.Error("expected false for unrecognized value 'maybe'")
+	}
+}
+
+func TestOptionalStringSlice_SingleElement(t *testing.T) {
+	t.Setenv("TEST_SLICE_SINGLE", "only")
+	got := OptionalStringSlice("TEST_SLICE_SINGLE", ",", nil)
+	if len(got) != 1 || got[0] != "only" {
+		t.Errorf("expected [only], got %v", got)
+	}
+}
+
+func TestOptionalStringSlice_CustomSeparator(t *testing.T) {
+	t.Setenv("TEST_SLICE_PIPE", "a | b | c")
+	got := OptionalStringSlice("TEST_SLICE_PIPE", "|", nil)
+	if len(got) != 3 || got[0] != "a" || got[1] != "b" || got[2] != "c" {
+		t.Errorf("expected [a b c], got %v", got)
+	}
+}
+
+func TestRequired_ErrorMessage(t *testing.T) {
+	t.Setenv("TEST_REQ_MSG", "")
+	os.Unsetenv("TEST_REQ_MSG") //nolint:errcheck
+	_, err := Required("TEST_REQ_MSG")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "TEST_REQ_MSG") {
+		t.Errorf("error should mention variable name, got: %v", err)
 	}
 }
 

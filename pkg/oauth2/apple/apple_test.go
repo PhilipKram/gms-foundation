@@ -314,5 +314,3 @@ func (t *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	req.URL.Host = t.rewrite[len("http://"):]
 	return t.base.RoundTrip(req)
 }
-
-

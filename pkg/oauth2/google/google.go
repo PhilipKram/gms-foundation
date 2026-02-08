@@ -52,7 +52,7 @@ func ExchangeCode(ctx context.Context, code, clientID, clientSecret, redirectURI
 	if err != nil {
 		return nil, fmt.Errorf("token exchange failed")
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // best-effort close on HTTP response
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("token exchange failed")
@@ -77,7 +77,7 @@ func GetUserInfo(ctx context.Context, accessToken string) (*UserInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("userinfo request failed")
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // best-effort close on HTTP response
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("userinfo request failed")

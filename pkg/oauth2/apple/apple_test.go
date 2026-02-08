@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
-	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -99,7 +98,7 @@ func TestExchangeCode(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(TokenResponse{
+			_ = json.NewEncoder(w).Encode(TokenResponse{
 				AccessToken: "apple-access-token",
 				IDToken:     "apple-id-token",
 				TokenType:   "Bearer",
@@ -151,8 +150,8 @@ func TestVerifyIDToken(t *testing.T) {
 
 	// Set up a mock JWKS server
 	jwksServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		x := privateKey.PublicKey.X.Bytes()
-		y := privateKey.PublicKey.Y.Bytes()
+		x := privateKey.X.Bytes()
+		y := privateKey.Y.Bytes()
 
 		// Pad to 32 bytes for P-256
 		for len(x) < 32 {
@@ -177,7 +176,7 @@ func TestVerifyIDToken(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(jwks)
+		_ = json.NewEncoder(w).Encode(jwks)
 	}))
 	defer jwksServer.Close()
 
@@ -316,17 +315,4 @@ func (t *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	return t.base.RoundTrip(req)
 }
 
-// padBytes pads a byte slice to the specified length with leading zeros.
-func padBytes(b []byte, size int) []byte {
-	if len(b) >= size {
-		return b
-	}
-	padded := make([]byte, size)
-	copy(padded[size-len(b):], b)
-	return padded
-}
 
-// bigIntBytes returns the big-endian byte representation of a big.Int, padded to size.
-func bigIntBytes(n *big.Int, size int) []byte {
-	return padBytes(n.Bytes(), size)
-}

@@ -29,7 +29,7 @@ func TestExchangeCode(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(TokenResponse{
+			_ = json.NewEncoder(w).Encode(TokenResponse{
 				AccessToken: "access-token-123",
 				IDToken:     "id-token-456",
 				TokenType:   "Bearer",
@@ -91,7 +91,7 @@ func TestGetUserInfo(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(UserInfo{
+			_ = json.NewEncoder(w).Encode(UserInfo{
 				Sub:           "google-sub-123",
 				Email:         "user@example.com",
 				EmailVerified: true,

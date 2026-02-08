@@ -130,7 +130,7 @@ func getApplePublicKey(ctx context.Context, kid string) (*ecdsa.PublicKey, error
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch JWKS: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // best-effort close on HTTP response
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("JWKS endpoint returned status %d", resp.StatusCode)

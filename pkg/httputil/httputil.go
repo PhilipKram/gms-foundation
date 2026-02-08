@@ -17,7 +17,7 @@ type PaginatedResponse struct {
 func WriteJSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
+	_ = json.NewEncoder(w).Encode(v)
 }
 
 // WriteError writes a JSON error response of the form {"error": msg}.

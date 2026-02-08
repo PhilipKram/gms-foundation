@@ -19,7 +19,8 @@ func TestRequired_Set(t *testing.T) {
 
 func TestRequired_Missing(t *testing.T) {
 	// Ensure the variable is unset
-	os.Unsetenv("TEST_REQUIRED_MISSING")
+	t.Setenv("TEST_REQUIRED_MISSING", "")
+	os.Unsetenv("TEST_REQUIRED_MISSING") //nolint:errcheck
 	_, err := Required("TEST_REQUIRED_MISSING")
 	if err == nil {
 		t.Fatal("expected error for missing required variable")
@@ -42,7 +43,8 @@ func TestOptional_Set(t *testing.T) {
 }
 
 func TestOptional_Missing(t *testing.T) {
-	os.Unsetenv("TEST_OPT_MISSING")
+	t.Setenv("TEST_OPT_MISSING", "")
+	os.Unsetenv("TEST_OPT_MISSING") //nolint:errcheck
 	if v := Optional("TEST_OPT_MISSING", "fallback"); v != "fallback" {
 		t.Errorf("expected 'fallback', got %q", v)
 	}
@@ -65,7 +67,8 @@ func TestOptionalBool_False(t *testing.T) {
 }
 
 func TestOptionalBool_Missing(t *testing.T) {
-	os.Unsetenv("TEST_BOOL_MISSING")
+	t.Setenv("TEST_BOOL_MISSING", "")
+	os.Unsetenv("TEST_BOOL_MISSING") //nolint:errcheck
 	if OptionalBool("TEST_BOOL_MISSING", true) != true {
 		t.Error("expected default true")
 	}

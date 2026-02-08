@@ -86,7 +86,7 @@ func HandleRequestBody(c *gin.Context, contentType string, out interface{}) erro
 
 	buf, done := requestBodyBuffer(c)
 	if done {
-		return fmt.Errorf("Failed to read request body")
+		return fmt.Errorf("failed to read request body")
 	}
 
 	val := reflect.ValueOf(out)

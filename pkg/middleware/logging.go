@@ -25,6 +25,20 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return n, err
 }
 
+// Flush delegates to the underlying ResponseWriter if it implements http.Flusher.
+// This is required for SSE/streaming responses to work through the logging middleware.
+func (rw *responseWriter) Flush() {
+	if f, ok := rw.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
+// Unwrap returns the underlying ResponseWriter, allowing http.ResponseController
+// to access interfaces (like http.Flusher) on the original writer.
+func (rw *responseWriter) Unwrap() http.ResponseWriter {
+	return rw.ResponseWriter
+}
+
 // RequestLogger creates a middleware that logs HTTP requests using zerolog.
 // It logs the method, path, status code, duration, and bytes written.
 func RequestLogger(logger zerolog.Logger) func(http.Handler) http.Handler {

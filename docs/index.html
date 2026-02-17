@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMS Foundation - Production-Ready Go Packages</title>
+    <meta name="description" content="A collection of production-ready Go packages for building robust HTTP services. Structured logging, health checks, metrics, middleware, and utilities.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent: #818cf8;
+            --accent-dim: rgba(129, 140, 248, 0.12);
+            --accent-glow: rgba(129, 140, 248, 0.25);
+            --green: #34d399;
+            --green-dim: rgba(52, 211, 153, 0.12);
+            --cyan: #22d3ee;
+            --cyan-dim: rgba(34, 211, 238, 0.12);
+            --orange: #fb923c;
+            --orange-dim: rgba(251, 146, 60, 0.12);
+            --pink: #f472b6;
+            --pink-dim: rgba(244, 114, 182, 0.12);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Ambient background */
+        .ambient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .ambient-orb:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            background: var(--accent);
+            top: -200px;
+            right: -100px;
+            opacity: 0.08;
+        }
+
+        .ambient-orb:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            background: var(--cyan);
+            bottom: -150px;
+            left: -100px;
+            opacity: 0.06;
+            animation-delay: -7s;
+        }
+
+        .ambient-orb:nth-child(3) {
+            width: 400px;
+            height: 400px;
+            background: var(--green);
+            top: 50%;
+            left: 50%;
+            opacity: 0.04;
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* Grid pattern overlay */
+        .grid-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 0 24px;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .nav-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--bg-primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-cta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            border-radius: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-cta:hover {
+            background: rgba(129, 140, 248, 0.2);
+            border-color: rgba(129, 140, 248, 0.3);
+        }
+
+        .nav-cta svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 24px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .hero-badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .hero h1 {
+            font-size: clamp(40px, 6vw, 72px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--cyan) 50%, var(--green) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 18px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.6s ease 0.2s both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 0.6s ease 0.3s both;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #9ba3fc;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+
+        .install-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 48px;
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            animation: fadeInUp 0.6s ease 0.4s both;
+        }
+
+        .install-bar code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .install-bar code span {
+            color: var(--green);
+        }
+
+        .install-bar .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: color 0.2s;
+            display: flex;
+        }
+
+        .install-bar .copy-btn:hover {
+            color: var(--text-primary);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Section common */
+        section {
+            padding: 100px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 4vw, 40px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .section-desc {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 560px;
+            line-height: 1.7;
+            margin-bottom: 48px;
+        }
+
+        /* Stats bar */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 100px;
+        }
+
+        .stat {
+            background: var(--bg-secondary);
+            padding: 32px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Feature cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .feature-card {
+            padding: 28px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+
+        .feature-icon.indigo { background: var(--accent-dim); color: var(--accent); }
+        .feature-icon.green { background: var(--green-dim); color: var(--green); }
+        .feature-icon.cyan { background: var(--cyan-dim); color: var(--cyan); }
+        .feature-icon.orange { background: var(--orange-dim); color: var(--orange); }
+        .feature-icon.pink { background: var(--pink-dim); color: var(--pink); }
+
+        .feature-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Packages section */
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .package-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition: all 0.3s ease;
+        }
+
+        .package-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+        }
+
+        .package-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .package-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .package-icon {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* Code example */
+        .code-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .code-info {
+            padding-top: 16px;
+        }
+
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .code-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .code-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .code-content {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .code-content .kw { color: var(--accent); }
+        .code-content .fn { color: var(--cyan); }
+        .code-content .str { color: var(--green); }
+        .code-content .cm { color: var(--text-muted); }
+        .code-content .typ { color: var(--orange); }
+        .code-content .num { color: var(--pink); }
+
+        /* Compatibility table */
+        .compat-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        .compat-table th,
+        .compat-table td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .compat-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .compat-table td {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .compat-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .compat-check {
+            color: var(--green);
+        }
+
+        /* Tech stack */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .tech-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.2s;
+        }
+
+        .tech-item:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-card-hover);
+        }
+
+        .tech-icon {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .tech-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .tech-version {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Architecture */
+        .arch-diagram {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-top: 24px;
+        }
+
+        .arch-layer {
+            margin-bottom: 16px;
+        }
+
+        .arch-layer:last-child {
+            margin-bottom: 0;
+        }
+
+        .arch-layer-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .arch-items {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .arch-item {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .arch-item.infra {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid rgba(129, 140, 248, 0.15);
+        }
+
+        .arch-item.util {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(52, 211, 153, 0.15);
+        }
+
+        .arch-item.auth {
+            background: var(--cyan-dim);
+            color: var(--cyan);
+            border: 1px solid rgba(34, 211, 238, 0.15);
+        }
+
+        .arch-connector {
+            display: flex;
+            justify-content: center;
+            padding: 4px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 24px;
+            margin-top: 60px;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .packages-grid {
+                grid-template-columns: 1fr;
+            }
+            .code-section {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn-primary, .btn-secondary {
+                justify-content: center;
+            }
+            .install-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .footer-inner {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            .footer-left {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .arch-diagram {
+                padding: 20px;
+            }
+        }
+
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: all 0.6s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Mobile nav toggle */
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .nav-toggle {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient">
+        <div class="ambient-orb"></div>
+        <div class="ambient-orb"></div>
+        <div class="ambient-orb"></div>
+    </div>
+    <div class="grid-pattern"></div>
+
+    <div class="content-wrapper">
+        <!-- Navigation -->
+        <nav id="navbar">
+            <div class="nav-inner">
+                <a href="#" class="nav-logo">
+                    <div class="nav-logo-icon">G</div>
+                    GMS Foundation
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#packages">Packages</a></li>
+                    <li><a href="#quickstart">Quick Start</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
+                    <li><a href="#tech">Stack</a></li>
+                </ul>
+                <a href="https://github.com/PhilipKram/gms-foundation" class="nav-cta" target="_blank">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                    GitHub
+                </a>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <section class="hero" id="top">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                Production-Ready &middot; Go 1.24 &middot; MIT License
+            </div>
+            <h1>
+                Build Robust<br>
+                <span class="gradient-text">HTTP Services</span>
+            </h1>
+            <p>
+                A curated collection of production-grade Go packages for structured logging, health checks, metrics, middleware, and application utilities. Drop-in foundations for your next service.
+            </p>
+            <div class="hero-actions">
+                <a href="https://github.com/PhilipKram/gms-foundation" class="btn-primary" target="_blank">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                    View on GitHub
+                </a>
+                <a href="#quickstart" class="btn-secondary">
+                    Quick Start Guide
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+            </div>
+            <div class="install-bar">
+                <code>$ <span>go get</span> github.com/PhilipKram/gms-foundation</code>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('go get github.com/PhilipKram/gms-foundation')" title="Copy">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+            <div class="stats reveal">
+                <div class="stat">
+                    <div class="stat-value" style="color: var(--accent);">13</div>
+                    <div class="stat-label">Packages</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: var(--cyan);">Go 1.24</div>
+                    <div class="stat-label">Go Version</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: var(--green);">2</div>
+                    <div class="stat-label">Router Support</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: var(--orange);">MIT</div>
+                    <div class="stat-label">License</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <section id="features">
+            <div class="section-label reveal">Core Capabilities</div>
+            <h2 class="section-title reveal">Everything you need to ship</h2>
+            <p class="section-desc reveal">
+                Battle-tested components that handle infrastructure plumbing so you can focus on business logic.
+            </p>
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <div class="feature-icon indigo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <h3>Structured Logging</h3>
+                    <p>Zerolog-based logging with console and JSON (Logstash/ELK) output modes, configurable levels, and custom writers.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon green">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <h3>Health Checks</h3>
+                    <p>Kubernetes-compatible readiness and liveness endpoints with custom check function support for both Gin and Chi.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon cyan">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <h3>Prometheus Metrics</h3>
+                    <p>Automatic <code>/metrics</code> endpoint registration. Expose runtime and application metrics in Prometheus format.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon orange">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    </div>
+                    <h3>OAuth2 + PKCE</h3>
+                    <p>Production OAuth2 flows for Google and Apple with PKCE support, token exchange, and user profile retrieval.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon pink">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    </div>
+                    <h3>HTTP Middleware</h3>
+                    <p>Request logging with path exclusions, CORS configuration, panic recovery, and request timeout enforcement.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon indigo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                    </div>
+                    <h3>File Uploads</h3>
+                    <p>Configurable categories with MIME type validation, magic-byte verification, UUID filenames, and path traversal protection.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Packages -->
+        <section id="packages">
+            <div class="section-label reveal">Package Reference</div>
+            <h2 class="section-title reveal">13 packages, zero boilerplate</h2>
+            <p class="section-desc reveal">
+                Each package follows Go best practices with functional options, sensible defaults, and minimal dependencies.
+            </p>
+
+            <h3 style="font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 16px;" class="reveal">Infrastructure</h3>
+            <div class="packages-grid reveal" style="margin-bottom: 32px;">
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--accent-dim); color: var(--accent);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/logger</div>
+                        <div class="package-desc">Structured logging via zerolog. Console and JSON (Logstash) output, configurable levels, custom writers.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--green-dim); color: var(--green);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/server</div>
+                        <div class="package-desc">Gin router setup with graceful shutdown, production mode, and optional access logging.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--cyan-dim); color: var(--cyan);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/server/chi</div>
+                        <div class="package-desc">Chi router configuration with standard middleware, configurable timeouts, and graceful shutdown.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--green-dim); color: var(--green);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/healthcheck</div>
+                        <div class="package-desc">Kubernetes-compatible /healthz/readiness and /healthz/liveness endpoints with custom check functions.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--orange-dim); color: var(--orange);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/prometheus</div>
+                        <div class="package-desc">Automatic /metrics endpoint registration for Prometheus format metrics on Gin and Chi.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--pink-dim); color: var(--pink);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/middleware</div>
+                        <div class="package-desc">Request logging (with skip paths), CORS, panic recovery, and request timeout middleware.</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 16px;" class="reveal">Application Utilities</h3>
+            <div class="packages-grid reveal">
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--accent-dim); color: var(--accent);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/httputil</div>
+                        <div class="package-desc">WriteJSON, WriteError, WritePaginated with consistent JSON envelopes and error formatting.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--orange-dim); color: var(--orange);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/passwords</div>
+                        <div class="package-desc">Bcrypt wrapper with configurable cost (default 12). Hash and Check for secure password handling.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--cyan-dim); color: var(--cyan);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/canonical</div>
+                        <div class="package-desc">URL normalization, tracking parameter stripping, SHA-256 deduplication hashes. Thread-safe.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--green-dim); color: var(--green);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/dbutil</div>
+                        <div class="package-desc">sql.DB setup with functional options. Defaults: 25 open, 10 idle, 5m lifetime, 2m idle time.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--pink-dim); color: var(--pink);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/uploads</div>
+                        <div class="package-desc">File storage with MIME validation, magic-byte checks, UUID filenames. Images (10MB) and audio (50MB).</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--accent-dim); color: var(--accent);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/envconfig</div>
+                        <div class="package-desc">Typed env helpers: Required, Optional, OptionalBool, OptionalStringSlice, ResolveAbsPath.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--cyan-dim); color: var(--cyan);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/oauth2</div>
+                        <div class="package-desc">OAuth2 with PKCE, state generation, Google and Apple provider support, token exchange.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start -->
+        <section id="quickstart">
+            <div class="section-label reveal">Quick Start</div>
+            <h2 class="section-title reveal">Up and running in seconds</h2>
+            <p class="section-desc reveal">
+                Set up a production-ready HTTP server with health checks, metrics, and structured logging.
+            </p>
+            <div class="code-section reveal">
+                <div class="code-info">
+                    <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">Chi Router Setup</h3>
+                    <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 24px;">
+                        A complete server with health checks, Prometheus metrics, structured logging, middleware, and graceful shutdown &mdash; in under 30 lines.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 6px; height: 6px; background: var(--green); border-radius: 50;"></div>
+                            <span style="font-size: 13px; color: var(--text-secondary);">Graceful shutdown with configurable timeout</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 6px; height: 6px; background: var(--green); border-radius: 50%;"></div>
+                            <span style="font-size: 13px; color: var(--text-secondary);">Kubernetes-ready health endpoints</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 6px; height: 6px; background: var(--green); border-radius: 50%;"></div>
+                            <span style="font-size: 13px; color: var(--text-secondary);">Prometheus metrics out of the box</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 6px; height: 6px; background: var(--green); border-radius: 50%;"></div>
+                            <span style="font-size: 13px; color: var(--text-secondary);">Production middleware stack included</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots">
+                            <div class="code-dot"></div>
+                            <div class="code-dot"></div>
+                            <div class="code-dot"></div>
+                        </div>
+                        <span class="code-filename">main.go</span>
+                    </div>
+                    <div class="code-content">
+<pre><span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/server/chi"</span>
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/healthcheck"</span>
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/prometheus"</span>
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/logger"</span>
+    <span class="str">"github.com/rs/zerolog"</span>
+)
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    logger.<span class="fn">SetupLogger</span>(logger.<span class="typ">ConfigSchema</span>{
+        Level: <span class="fn">int8</span>(zerolog.InfoLevel),
+    })
+
+    srv, router := chi.<span class="fn">Setup</span>(chi.<span class="typ">ConfigSchema</span>{
+        Port:      <span class="str">"8080"</span>,
+        AccessLog: <span class="kw">true</span>,
+    })
+
+    healthcheck.<span class="fn">RegisterChi</span>(router)
+    prometheus.<span class="fn">RegisterChi</span>(router)
+
+    router.<span class="fn">Get</span>(<span class="str">"/api/hello"</span>, yourHandler)
+
+    chi.<span class="fn">Start</span>(srv)
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <div class="section-label reveal">Architecture</div>
+            <h2 class="section-title reveal">Layered package design</h2>
+            <p class="section-desc reveal">
+                Clean separation between infrastructure, application utilities, and authentication concerns.
+            </p>
+
+            <div class="arch-diagram reveal">
+                <div class="arch-layer">
+                    <div class="arch-layer-label">Infrastructure Layer</div>
+                    <div class="arch-items">
+                        <span class="arch-item infra">server</span>
+                        <span class="arch-item infra">server/chi</span>
+                        <span class="arch-item infra">logger</span>
+                        <span class="arch-item infra">healthcheck</span>
+                        <span class="arch-item infra">prometheus</span>
+                        <span class="arch-item infra">middleware</span>
+                    </div>
+                </div>
+                <div class="arch-connector">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                </div>
+                <div class="arch-layer">
+                    <div class="arch-layer-label">Application Utilities</div>
+                    <div class="arch-items">
+                        <span class="arch-item util">httputil</span>
+                        <span class="arch-item util">passwords</span>
+                        <span class="arch-item util">canonical</span>
+                        <span class="arch-item util">dbutil</span>
+                        <span class="arch-item util">uploads</span>
+                        <span class="arch-item util">envconfig</span>
+                    </div>
+                </div>
+                <div class="arch-connector">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                </div>
+                <div class="arch-layer">
+                    <div class="arch-layer-label">Authentication</div>
+                    <div class="arch-items">
+                        <span class="arch-item auth">oauth2</span>
+                        <span class="arch-item auth">oauth2/google</span>
+                        <span class="arch-item auth">oauth2/apple</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Router Compatibility -->
+            <h3 style="font-size: 20px; font-weight: 600; margin-top: 64px; margin-bottom: 8px;" class="reveal">Router Compatibility</h3>
+            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;" class="reveal">
+                First-class support for both major Go routers. Use the API that fits your stack.
+            </p>
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;" class="reveal">
+                <table class="compat-table">
+                    <thead>
+                        <tr>
+                            <th>Router</th>
+                            <th>Server Setup</th>
+                            <th>Health Checks</th>
+                            <th>Metrics</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">Chi <span style="color: var(--text-muted)">v5</span></td>
+                            <td>pkg/server/chi</td>
+                            <td>healthcheck.RegisterChi()</td>
+                            <td>prometheus.RegisterChi()</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">Gin <span style="color: var(--text-muted)">v1</span></td>
+                            <td>pkg/server</td>
+                            <td>healthcheck.Register()</td>
+                            <td>prometheus.Register()</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <section id="tech">
+            <div class="section-label reveal">Tech Stack</div>
+            <h2 class="section-title reveal">Built on proven technologies</h2>
+            <p class="section-desc reveal">
+                Carefully selected dependencies that are widely adopted, well-maintained, and production-tested.
+            </p>
+            <div class="tech-grid reveal">
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--cyan-dim); color: var(--cyan);">Go</div>
+                    <div>
+                        <div class="tech-name">Go</div>
+                        <div class="tech-version">v1.24</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--green-dim); color: var(--green);">Gi</div>
+                    <div>
+                        <div class="tech-name">Gin</div>
+                        <div class="tech-version">v1.11.0</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--accent-dim); color: var(--accent);">Ch</div>
+                    <div>
+                        <div class="tech-name">Chi</div>
+                        <div class="tech-version">v5.2.5</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--orange-dim); color: var(--orange);">Zl</div>
+                    <div>
+                        <div class="tech-name">Zerolog</div>
+                        <div class="tech-version">v1.34.0</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--pink-dim); color: var(--pink);">Pr</div>
+                    <div>
+                        <div class="tech-name">Prometheus</div>
+                        <div class="tech-version">v1.23.2</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--cyan-dim); color: var(--cyan);">Jw</div>
+                    <div>
+                        <div class="tech-name">JWT</div>
+                        <div class="tech-version">v5.3.1</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--green-dim); color: var(--green);">My</div>
+                    <div>
+                        <div class="tech-name">MySQL Driver</div>
+                        <div class="tech-version">v1.9.3</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--accent-dim); color: var(--accent);">Cr</div>
+                    <div>
+                        <div class="tech-name">x/crypto</div>
+                        <div class="tech-version">v0.48.0</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--orange-dim); color: var(--orange);">Pb</div>
+                    <div>
+                        <div class="tech-name">Protobuf</div>
+                        <div class="tech-version">v1.36.11</div>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon" style="background: var(--pink-dim); color: var(--pink);">Uu</div>
+                    <div>
+                        <div class="tech-name">UUID</div>
+                        <div class="tech-version">v1.6.0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CI/CD -->
+            <h3 style="font-size: 20px; font-weight: 600; margin-top: 64px; margin-bottom: 12px;" class="reveal">CI/CD & Quality</h3>
+            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;" class="reveal">
+                Automated pipelines ensure every change meets quality standards.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;" class="reveal">
+                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">GitHub Actions</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Automated testing on push & PR</div>
+                </div>
+                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">golangci-lint v2</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Comprehensive Go linting</div>
+                </div>
+                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">CodeQL Analysis</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Automated security scanning</div>
+                </div>
+                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Race Detection</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Concurrency safety testing</div>
+                </div>
+                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Codecov</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Coverage tracking & reporting</div>
+                </div>
+                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Dependabot</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Automated dependency updates</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-inner">
+                <div class="footer-left">
+                    <span class="footer-text">GMS Foundation &mdash; MIT License &copy; 2024&ndash;2026 Philip Kramer</span>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/PhilipKram/gms-foundation" target="_blank">GitHub</a>
+                    <a href="https://pkg.go.dev/github.com/PhilipKram/gms-foundation" target="_blank">Go Docs</a>
+                    <a href="https://github.com/PhilipKram/gms-foundation/blob/main/LICENSE" target="_blank">License</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 20);
+        });
+
+        // Scroll reveal
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, i * 60);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

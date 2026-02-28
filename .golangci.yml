@@ -9,4 +9,7 @@ linters:
     - gosimple
     - ineffassign
     - misspell
+
+formatters:
+  enable:
     - gofmt

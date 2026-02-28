@@ -13,14 +13,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// ConfigSchema defines the configuration for a Chi-based HTTP server.
-type ConfigSchema struct {
+// Config defines the configuration for a Chi-based HTTP server.
+type Config struct {
 	// Port to listen on (e.g., "8080")
 	Port string
 	// AccessLog enables request logging middleware
 	AccessLog bool
-	// Production mode affects middleware behavior
-	Production bool
 	// ReadTimeout for HTTP server
 	ReadTimeout time.Duration
 	// WriteTimeout for HTTP server
@@ -31,7 +29,7 @@ type ConfigSchema struct {
 
 // Setup creates and configures a new Chi router with standard middleware.
 // Returns an HTTP server and the router for further route configuration.
-func Setup(serverConfig ConfigSchema) (*http.Server, *chi.Mux) {
+func Setup(serverConfig Config) (*http.Server, *chi.Mux) {
 	log.Info().Msg("Starting HTTP server on port " + serverConfig.Port)
 
 	router := chi.NewRouter()

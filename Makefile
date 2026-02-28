@@ -4,8 +4,8 @@ GO_VERSION=$(shell $(GO) version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f2)
 PACKAGES ?= $(shell $(GO) list ./...)
 VETPACKAGES ?= $(shell $(GO) list ./... | grep -v /examples/)
 GOFILES := $(shell find . -name "*.go")
-TESTFOLDER := $(shell $(GO) list ./... | grep -E 'pkg$$' | grep -v examples)
-TESTTAGS ?= ""
+TESTFOLDER := $(shell $(GO) list ./...)
+TESTTAGS ?=
 
 .PHONY: test
 test:
@@ -42,36 +42,28 @@ fmt-check:
 		exit 1; \
 	fi;
 
+.PHONY: vet
 vet:
 	$(GO) vet $(VETPACKAGES)
 
 .PHONY: lint
 lint:
-	@hash golint > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u golang.org/x/lint/golint; \
-	fi
-	for PKG in $(PACKAGES); do golint -set_exit_status $$PKG || exit 1; done;
+	golangci-lint run ./...
 
 .PHONY: misspell-check
 misspell-check:
 	@hash misspell > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u github.com/client9/misspell/cmd/misspell; \
+		$(GO) install github.com/client9/misspell/cmd/misspell@latest; \
 	fi
 	misspell -error $(GOFILES)
 
 .PHONY: misspell
 misspell:
 	@hash misspell > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u github.com/client9/misspell/cmd/misspell; \
+		$(GO) install github.com/client9/misspell/cmd/misspell@latest; \
 	fi
 	misspell -w $(GOFILES)
 
 .PHONY: tools
 tools:
-	@if [ $(GO_VERSION) -gt 15 ]; then \
-		$(GO) install golang.org/x/lint/golint@latest; \
-		$(GO) install github.com/client9/misspell/cmd/misspell@latest; \
-	elif [ $(GO_VERSION) -lt 16 ]; then \
-		$(GO) install golang.org/x/lint/golint; \
-		$(GO) install github.com/client9/misspell/cmd/misspell; \
-	fi
+	$(GO) install github.com/client9/misspell/cmd/misspell@latest

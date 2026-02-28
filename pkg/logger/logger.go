@@ -9,8 +9,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// ConfigSchema defines the logger configuration options.
-type ConfigSchema struct {
+// Config defines the logger configuration options.
+type Config struct {
 	// Level sets the minimum log level (-1=trace, 0=debug, 1=info, 2=warn, 3=error, 4=fatal, 5=panic)
 	Level int8
 	// Logstash enables Logstash-compatible JSON output format
@@ -25,7 +25,7 @@ type ConfigSchema struct {
 
 // SetupLogger configures the global zerolog logger with the provided configuration.
 // This function modifies the global log.Logger instance.
-func SetupLogger(loggingConfig ConfigSchema) {
+func SetupLogger(loggingConfig Config) {
 	zerolog.SetGlobalLevel(zerolog.Level(loggingConfig.Level))
 
 	log.Logger = createBaseLogger(loggingConfig)
@@ -36,7 +36,7 @@ func SetupLogger(loggingConfig ConfigSchema) {
 
 // New creates and returns a new logger instance with the provided configuration.
 // Unlike SetupLogger, this does not modify the global logger.
-func New(loggingConfig ConfigSchema) zerolog.Logger {
+func New(loggingConfig Config) zerolog.Logger {
 	logger := createBaseLogger(loggingConfig)
 	if loggingConfig.Logstash {
 		logger = logger.Hook(NewLevelValueHook())
@@ -44,7 +44,7 @@ func New(loggingConfig ConfigSchema) zerolog.Logger {
 	return logger
 }
 
-func createBaseLogger(loggingConfig ConfigSchema) zerolog.Logger {
+func createBaseLogger(loggingConfig Config) zerolog.Logger {
 	var loggerWriter io.Writer
 
 	// Use custom writer if provided, otherwise default to os.Stdout
@@ -76,6 +76,8 @@ func createBaseLogger(loggingConfig ConfigSchema) zerolog.Logger {
 	return ctx.Logger()
 }
 
+// logsStructureUpdate sets zerolog field names for Logstash/ELK compatibility.
+// Note: LevelFieldName = "level" is the zerolog default but set explicitly for clarity.
 func logsStructureUpdate() {
 	zerolog.TimestampFieldName = "@timestamp"
 	zerolog.LevelTraceValue = "TRACE"
@@ -95,15 +97,17 @@ type LevelValueHook struct {
 }
 
 // NewLevelValueHook creates a new LevelValueHook with standard Logstash level values.
-// Level mappings: DEBUG=10000, INFO=20000, WARN=30000, ERROR=40000, FATAL=50000
+// Level mappings: TRACE=5000, DEBUG=10000, INFO=20000, WARN=30000, ERROR=40000, FATAL=50000, PANIC=60000
 func NewLevelValueHook() LevelValueHook {
 	return LevelValueHook{
 		levelValues: map[zerolog.Level]int{
+			zerolog.TraceLevel: 5000,
 			zerolog.DebugLevel: 10000,
 			zerolog.InfoLevel:  20000,
 			zerolog.WarnLevel:  30000,
 			zerolog.ErrorLevel: 40000,
 			zerolog.FatalLevel: 50000,
+			zerolog.PanicLevel: 60000,
 		},
 	}
 }

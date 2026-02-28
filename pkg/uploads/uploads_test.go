@@ -349,6 +349,32 @@ func TestDeleteFile_CleanPath(t *testing.T) {
 	}
 }
 
+func TestSaveFile_CustomCategory_ValidationPassthrough(t *testing.T) {
+	dir := t.TempDir()
+	// Custom category with a MIME prefix that is not "image/" or "audio/"
+	// — validateContent should allow it through.
+	cat := FileCategory{
+		Subdir:       "docs",
+		MaxSize:      1 << 20,
+		AllowedTypes: map[string]string{"application/pdf": ".pdf"},
+	}
+	s, err := NewStorage(dir, WithCategories(cat))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// A minimal PDF-like payload; DetectContentType will not match application/pdf
+	// exactly, but validateContent should return nil for unknown prefixes.
+	pdfHeader := []byte("%PDF-1.4 fake content for testing purposes here")
+	relPath, err := s.SaveFile(bytes.NewReader(pdfHeader), "application/pdf")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.HasSuffix(relPath, ".pdf") {
+		t.Errorf("expected .pdf suffix, got %q", relPath)
+	}
+}
+
 func TestCategoryFor_AllDefaultTypes(t *testing.T) {
 	dir := t.TempDir()
 	s, _ := NewStorage(dir)

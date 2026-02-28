@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	// MySQL driver imported as a side effect so that sql.Open("mysql", ...)
+	// works out of the box. For other databases, register the driver separately.
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -17,6 +19,9 @@ type PoolConfig struct {
 	MaxIdleConns    int
 	ConnMaxLifetime time.Duration
 	ConnMaxIdleTime time.Duration
+	// Ping controls whether Open verifies connectivity with a ping.
+	// Defaults to true via DefaultPoolConfig.
+	Ping bool
 }
 
 // DefaultPoolConfig returns the default pool configuration.
@@ -26,6 +31,7 @@ func DefaultPoolConfig() PoolConfig {
 		MaxIdleConns:    10,
 		ConnMaxLifetime: 5 * time.Minute,
 		ConnMaxIdleTime: 2 * time.Minute,
+		Ping:            true,
 	}
 }
 
@@ -52,8 +58,13 @@ func WithConnMaxIdleTime(d time.Duration) Option {
 	return func(c *PoolConfig) { c.ConnMaxIdleTime = d }
 }
 
+// WithPing controls whether Open pings the database after opening the connection.
+func WithPing(ping bool) Option {
+	return func(c *PoolConfig) { c.Ping = ping }
+}
+
 // Open opens a database connection using the given driver and DSN, configures
-// the connection pool, and pings the database to verify connectivity.
+// the connection pool, and optionally pings the database to verify connectivity.
 func Open(driverName, dsn string, opts ...Option) (*sql.DB, error) {
 	cfg := DefaultPoolConfig()
 	for _, o := range opts {
@@ -70,12 +81,14 @@ func Open(driverName, dsn string, opts ...Option) (*sql.DB, error) {
 	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
 
-	ctx, cancel := context.WithTimeout(context.Background(), defaultPingTimeout)
-	defer cancel()
+	if cfg.Ping {
+		ctx, cancel := context.WithTimeout(context.Background(), defaultPingTimeout)
+		defer cancel()
 
-	if err := db.PingContext(ctx); err != nil {
-		_ = db.Close()
-		return nil, fmt.Errorf("pinging database: %w", err)
+		if err := db.PingContext(ctx); err != nil {
+			_ = db.Close()
+			return nil, fmt.Errorf("pinging database: %w", err)
+		}
 	}
 
 	return db, nil

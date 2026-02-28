@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestRequired_Set(t *testing.T) {
@@ -30,9 +31,12 @@ func TestRequired_Missing(t *testing.T) {
 
 func TestRequired_Empty(t *testing.T) {
 	t.Setenv("TEST_REQUIRED_EMPTY", "")
-	_, err := Required("TEST_REQUIRED_EMPTY")
-	if err == nil {
-		t.Fatal("expected error for empty required variable")
+	v, err := Required("TEST_REQUIRED_EMPTY")
+	if err != nil {
+		t.Fatalf("unexpected error for explicitly-set empty variable: %v", err)
+	}
+	if v != "" {
+		t.Errorf("expected empty string, got %q", v)
 	}
 }
 
@@ -181,5 +185,69 @@ func TestResolveAbsPath_Relative(t *testing.T) {
 	// Should end with /uploads
 	if filepath.Base(got) != "uploads" {
 		t.Errorf("expected path ending in 'uploads', got %q", got)
+	}
+}
+
+func TestOptionalInt_Set(t *testing.T) {
+	t.Setenv("TEST_INT", "42")
+	if v := OptionalInt("TEST_INT", 0); v != 42 {
+		t.Errorf("expected 42, got %d", v)
+	}
+}
+
+func TestOptionalInt_Missing(t *testing.T) {
+	t.Setenv("TEST_INT_MISS", "")
+	os.Unsetenv("TEST_INT_MISS") //nolint:errcheck
+	if v := OptionalInt("TEST_INT_MISS", 99); v != 99 {
+		t.Errorf("expected default 99, got %d", v)
+	}
+}
+
+func TestOptionalInt_Invalid(t *testing.T) {
+	t.Setenv("TEST_INT_BAD", "notanumber")
+	if v := OptionalInt("TEST_INT_BAD", 7); v != 7 {
+		t.Errorf("expected default 7 for invalid int, got %d", v)
+	}
+}
+
+func TestOptionalDuration_Set(t *testing.T) {
+	t.Setenv("TEST_DUR", "5s")
+	if v := OptionalDuration("TEST_DUR", time.Minute); v != 5*time.Second {
+		t.Errorf("expected 5s, got %v", v)
+	}
+}
+
+func TestOptionalDuration_Missing(t *testing.T) {
+	t.Setenv("TEST_DUR_MISS", "")
+	os.Unsetenv("TEST_DUR_MISS") //nolint:errcheck
+	if v := OptionalDuration("TEST_DUR_MISS", 30*time.Second); v != 30*time.Second {
+		t.Errorf("expected default 30s, got %v", v)
+	}
+}
+
+func TestOptionalDuration_Invalid(t *testing.T) {
+	t.Setenv("TEST_DUR_BAD", "notaduration")
+	if v := OptionalDuration("TEST_DUR_BAD", time.Hour); v != time.Hour {
+		t.Errorf("expected default 1h for invalid duration, got %v", v)
+	}
+}
+
+func TestRequired_UnsetVsEmpty(t *testing.T) {
+	// Unset should return error
+	t.Setenv("TEST_UNSET_VS_EMPTY", "")
+	os.Unsetenv("TEST_UNSET_VS_EMPTY") //nolint:errcheck
+	_, err := Required("TEST_UNSET_VS_EMPTY")
+	if err == nil {
+		t.Fatal("expected error for unset variable")
+	}
+
+	// Set to empty should succeed
+	t.Setenv("TEST_UNSET_VS_EMPTY", "")
+	v, err := Required("TEST_UNSET_VS_EMPTY")
+	if err != nil {
+		t.Fatalf("expected no error for set-but-empty variable, got: %v", err)
+	}
+	if v != "" {
+		t.Errorf("expected empty string, got %q", v)
 	}
 }

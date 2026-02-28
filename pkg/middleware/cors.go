@@ -36,7 +36,17 @@ func DefaultCORSConfig() CORSConfig {
 }
 
 // CORS creates a middleware that handles Cross-Origin Resource Sharing (CORS).
+// It panics if AllowCredentials is true and AllowedOrigins contains "*",
+// as this combination is forbidden by the CORS specification.
 func CORS(config CORSConfig) func(http.Handler) http.Handler {
+	if config.AllowCredentials {
+		for _, o := range config.AllowedOrigins {
+			if o == "*" {
+				panic("middleware: CORS AllowCredentials cannot be used with wildcard AllowedOrigins")
+			}
+		}
+	}
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
@@ -46,6 +56,10 @@ func CORS(config CORSConfig) func(http.Handler) http.Handler {
 
 			if allowOrigin != "" {
 				w.Header().Set("Access-Control-Allow-Origin", allowOrigin)
+				// Add Vary: Origin when responding with a specific origin (not "*")
+				if allowOrigin != "*" {
+					w.Header().Add("Vary", "Origin")
+				}
 			}
 
 			if config.AllowCredentials {

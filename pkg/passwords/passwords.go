@@ -10,11 +10,13 @@ import (
 const DefaultCost = 12
 
 // Hash returns a bcrypt hash of the password using DefaultCost.
+// Note: bcrypt silently truncates passwords longer than 72 bytes.
 func Hash(password string) (string, error) {
 	return HashWithCost(password, DefaultCost)
 }
 
 // HashWithCost returns a bcrypt hash of the password using the specified cost.
+// Note: bcrypt silently truncates passwords longer than 72 bytes.
 func HashWithCost(password string, cost int) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), cost)
 	if err != nil {
@@ -24,7 +26,10 @@ func HashWithCost(password string, cost int) (string, error) {
 }
 
 // Check compares a bcrypt hash with a plaintext password.
-// Returns nil on success, or an error if they don't match.
+// Returns nil on success, or a wrapped error if they don't match.
 func Check(hash, password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+		return fmt.Errorf("checking password: %w", err)
+	}
+	return nil
 }

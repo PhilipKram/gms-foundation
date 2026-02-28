@@ -190,11 +190,15 @@ func validateContent(data []byte, declaredType string, cat FileCategory) error {
 	}
 
 	// For audio, magic-byte detection is less reliable (e.g. m4a may detect as
-	// video/mp4 or application/octet-stream). Reject only if detected as a
-	// clearly wrong category.
+	// video/mp4 or application/octet-stream). Use an allowlist of detected
+	// content types that are known to correspond to valid audio content.
 	if strings.HasPrefix(declaredType, "audio/") {
-		if strings.HasPrefix(detected, "image/") || detected == "text/html; charset=utf-8" {
-			return fmt.Errorf("file content does not match declared audio type")
+		switch {
+		case strings.HasPrefix(detected, "audio/"): // e.g. audio/mpeg for ID3-tagged MP3
+		case detected == "application/octet-stream": // common for WAV, OGG, raw MP3
+		case detected == "video/mp4": // M4A files detected as video/mp4
+		default:
+			return fmt.Errorf("file content type %q does not match declared audio type %q", detected, declaredType)
 		}
 		return nil
 	}

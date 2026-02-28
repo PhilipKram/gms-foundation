@@ -88,6 +88,7 @@ func HandleRequestBody(c *gin.Context, contentType string, out interface{}) erro
 	if done {
 		return fmt.Errorf("failed to read request body")
 	}
+	defer bufferPool.Put(buf)
 
 	val := reflect.ValueOf(out)
 	if val.Kind() != reflect.Ptr || val.IsNil() {
@@ -119,9 +120,9 @@ func HandleRequestBody(c *gin.Context, contentType string, out interface{}) erro
 func requestBodyBuffer(c *gin.Context) (*bytes.Buffer, bool) {
 	buf := bufferPool.Get().(*bytes.Buffer)
 	buf.Reset()
-	defer bufferPool.Put(buf)
 
 	if _, err := io.Copy(buf, c.Request.Body); err != nil {
+		bufferPool.Put(buf)
 		log.Error().Err(err).Msg("Failed to read request body")
 		c.Status(http.StatusInternalServerError)
 		return nil, true

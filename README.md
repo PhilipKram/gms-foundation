@@ -18,6 +18,8 @@ Requires **Go 1.23+**.
 - **Password Hashing** - Bcrypt wrapper with configurable cost
 - **URL Canonicalization** - Normalize URLs, strip tracking params, compute dedup hashes
 - **Database Connection Pool** - `sql.DB` setup with functional options and sensible defaults
+- **MongoDB Client** - MongoDB connection wrapper with CSFLE auto-encryption support and functional options
+- **Redis Client** - Redis connection wrapper with standalone and Sentinel failover support
 - **File Upload Storage** - Configurable categories, MIME validation, size limits, path traversal protection
 - **Environment Config** - Typed helpers for loading required/optional env vars
 
@@ -117,6 +119,35 @@ db, err := dbutil.OpenMySQL(dsn,
 )
 ```
 
+### MongoDB Client
+
+```go
+import "github.com/PhilipKram/gms-foundation/pkg/mongodb"
+
+client, err := mongodb.Connect(ctx, mongodb.Config{
+    Host:     "mongodb://localhost:27017",
+    Database: "myapp",
+    Auth:     mongodb.AuthConfig{Username: "user", Password: "pass"},
+}, mongodb.WithAppName("my-service"))
+
+defer client.Close(ctx)
+db := client.DB()
+```
+
+### Redis Client
+
+```go
+import "github.com/PhilipKram/gms-foundation/pkg/redis"
+
+client, err := redis.Connect(ctx, redis.Config{
+    Addr: "localhost:6379",
+    Auth: redis.AuthConfig{Password: "secret"},
+}, redis.WithPoolSize(20))
+
+defer client.Close()
+client.Unwrap().Set(ctx, "key", "value", 0)
+```
+
 ### File Upload Storage
 
 ```go
@@ -193,6 +224,8 @@ healthcheck.RegisterChiWithChecks(router,
 | `pkg/passwords` | Bcrypt wrapper: `Hash` (cost 12), `HashWithCost`, `Check`. |
 | `pkg/canonical` | URL normalization (lowercase, strip tracking params, sort query, remove fragments/default ports) + SHA-256 hash. Thread-safe `AddTrackingParams` to extend the strip list. |
 | `pkg/dbutil` | `Open` / `OpenMySQL` with functional options (`WithMaxOpenConns`, `WithMaxIdleConns`, `WithConnMaxLifetime`, `WithConnMaxIdleTime`). Defaults: 25 open, 10 idle, 5m lifetime, 2m idle time. |
+| `pkg/mongodb` | MongoDB client wrapper with optional CSFLE auto-encryption (bypass mode). Functional options (`WithPingTimeout`, `WithAppName`, `WithDirectConnection`). Plain fallback DB for encrypted collections. |
+| `pkg/redis` | Redis client wrapper with standalone and Sentinel failover. Functional options (`WithPoolSize`, `WithMinIdleConns`, `WithDialTimeout`, `WithReadTimeout`, `WithWriteTimeout`). Defaults: pool 10, idle 2, dial 5s, read 3s, write 3s. |
 | `pkg/uploads` | File storage with configurable categories. Defaults: images (JPEG/PNG/GIF/WebP, 10 MB) and audio (MP3/WAV/M4A/OGG, 50 MB). Magic-byte content validation, UUID filenames, path traversal protection. |
 | `pkg/envconfig` | `Required`, `Optional`, `OptionalBool` ("true"/"1"/"yes"), `OptionalStringSlice` (split + trim), `ResolveAbsPath`. |
 

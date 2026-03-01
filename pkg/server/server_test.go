@@ -106,4 +106,8 @@ func TestHandleRequestBody_NilPointer(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("{}"))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 for nil pointer, got %d", w.Code)
+	}
 }

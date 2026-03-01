@@ -71,8 +71,9 @@ func TestLevelValueHook_AllLevels(t *testing.T) {
 			continue
 		}
 
-		// For safe levels, verify the hook actually writes level_value
-		if tt.level >= zerolog.DebugLevel && tt.level <= zerolog.ErrorLevel {
+		// For safe levels (Trace through Error), verify the hook actually writes level_value.
+		// Fatal and Panic are excluded because they terminate the process.
+		if tt.level <= zerolog.ErrorLevel {
 			var buf bytes.Buffer
 			logger := zerolog.New(&buf).Hook(hook)
 			logger.WithLevel(tt.level).Msg("test")

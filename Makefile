@@ -53,17 +53,18 @@ lint:
 .PHONY: misspell-check
 misspell-check:
 	@hash misspell > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) install github.com/client9/misspell/cmd/misspell@latest; \
+		$(GO) install github.com/client9/misspell/cmd/misspell@v0.3.4; \
 	fi
 	misspell -error $(GOFILES)
 
 .PHONY: misspell
 misspell:
 	@hash misspell > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) install github.com/client9/misspell/cmd/misspell@latest; \
+		$(GO) install github.com/client9/misspell/cmd/misspell@v0.3.4; \
 	fi
 	misspell -w $(GOFILES)
 
 .PHONY: tools
 tools:
-	$(GO) install github.com/client9/misspell/cmd/misspell@latest
+	$(GO) install github.com/client9/misspell/cmd/misspell@v0.3.4
+	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest

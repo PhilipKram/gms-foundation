@@ -128,6 +128,7 @@ func HandleRequestBody(c *gin.Context, contentType string, out any) error {
 
 	val := reflect.ValueOf(out)
 	if val.Kind() != reflect.Ptr || val.IsNil() {
+		c.Status(http.StatusBadRequest)
 		return fmt.Errorf("out must be a non-nil pointer")
 	}
 

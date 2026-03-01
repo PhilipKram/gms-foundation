@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -109,17 +110,25 @@ func (c *Client) Encryption() *mongo.ClientEncryption {
 }
 
 // Close disconnects both clients and closes the encryption handle.
+// All errors are collected and returned as a single joined error.
 func (c *Client) Close(ctx context.Context) error {
+	var errs []error
 	if c.encryption != nil {
-		_ = c.encryption.Close(ctx)
+		if err := c.encryption.Close(ctx); err != nil {
+			errs = append(errs, fmt.Errorf("closing encryption handle: %w", err))
+		}
 	}
 	if c.plainClient != nil {
-		_ = c.plainClient.Disconnect(ctx)
+		if err := c.plainClient.Disconnect(ctx); err != nil {
+			errs = append(errs, fmt.Errorf("disconnecting plain client: %w", err))
+		}
 	}
 	if c.client != nil {
-		return c.client.Disconnect(ctx)
+		if err := c.client.Disconnect(ctx); err != nil {
+			errs = append(errs, fmt.Errorf("disconnecting client: %w", err))
+		}
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
 // buildClientOpts creates the base MongoDB client options from a Config.
@@ -181,10 +190,7 @@ func Connect(ctx context.Context, cfg Config, opts ...Option) (*Client, error) {
 		autoEncryptionOpts := options.AutoEncryption().
 			SetKeyVaultNamespace(cfg.CSFLE.KeyVaultNamespace).
 			SetKmsProviders(kmsProviders(cfg.CSFLE.MasterKey)).
-			SetBypassAutoEncryption(true).
-			SetExtraOptions(map[string]interface{}{
-				"mongocryptdBypassSpawn": true,
-			})
+			SetBypassAutoEncryption(true)
 		clientOpts.SetAutoEncryptionOptions(autoEncryptionOpts)
 	}
 

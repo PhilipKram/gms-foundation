@@ -145,6 +145,10 @@ func Connect(ctx context.Context, cfg Config, opts ...Option) (*Client, error) {
 
 	var uc goredis.UniversalClient
 
+	if cfg.Sentinel != nil && cfg.Sentinel.MasterName == "" {
+		return nil, fmt.Errorf("sentinel configuration provided but MasterName is empty")
+	}
+
 	if cfg.Sentinel != nil && cfg.Sentinel.MasterName != "" {
 		uc = goredis.NewFailoverClient(&goredis.FailoverOptions{
 			MasterName:       cfg.Sentinel.MasterName,

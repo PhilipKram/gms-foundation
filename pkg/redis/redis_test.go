@@ -120,6 +120,8 @@ func TestResolveAddr(t *testing.T) {
 		{"empty defaults", "", "localhost:6379"},
 		{"ipv4 with port", "127.0.0.1:6380", "127.0.0.1:6380"},
 		{"ipv4 without port", "127.0.0.1", "127.0.0.1:6379"},
+		{"ipv6 bracketed with port", "[::1]:6380", "[::1]:6380"},
+		{"ipv6 bracketed without port", "[::1]", "[::1]:6379"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -128,6 +130,18 @@ func TestResolveAddr(t *testing.T) {
 				t.Errorf("resolveAddr(%q) = %q, want %q", tt.addr, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestConnect_SentinelWithoutMasterName(t *testing.T) {
+	ctx := context.Background()
+	_, err := Connect(ctx, Config{
+		Sentinel: &SentinelConfig{
+			Nodes: []string{"localhost:26379"},
+		},
+	})
+	if err == nil {
+		t.Fatal("expected error when Sentinel is configured without MasterName")
 	}
 }
 

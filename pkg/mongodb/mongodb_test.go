@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 	"time"
+
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 func TestDefaultClientConfig(t *testing.T) {
@@ -98,11 +100,31 @@ func TestConnect_InvalidHost(t *testing.T) {
 	}
 }
 
+func TestClient_PlainDB_ReturnsPlainDB(t *testing.T) {
+	// When plainDB is set (CSFLE enabled), PlainDB() returns it directly.
+	c := &Client{
+		db:      &mongo.Database{},
+		plainDB: &mongo.Database{},
+	}
+	if c.PlainDB() != c.plainDB {
+		t.Error("expected PlainDB to return the plain database handle")
+	}
+}
+
 func TestClient_PlainDB_FallbackToPrimary(t *testing.T) {
 	// When plainDB is nil (no CSFLE), PlainDB() falls back to the primary db.
+	primary := &mongo.Database{}
 	c := &Client{
-		db: nil, // synthetic: both nil returns nil
+		db: primary,
 	}
+	if c.PlainDB() != primary {
+		t.Error("expected PlainDB to return the primary db when plainDB is nil")
+	}
+}
+
+func TestClient_PlainDB_BothNil(t *testing.T) {
+	// When both are nil, PlainDB() returns nil.
+	c := &Client{}
 	if c.PlainDB() != nil {
 		t.Error("expected nil from PlainDB when both plainDB and db are nil")
 	}

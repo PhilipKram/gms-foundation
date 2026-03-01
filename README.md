@@ -41,7 +41,7 @@ import (
 )
 
 func main() {
-    srv, router := chi.Setup(chi.ConfigSchema{
+    srv, router := chi.Setup(chi.Config{
         Port:      "8080",
         AccessLog: true,
     })
@@ -65,7 +65,7 @@ import (
 )
 
 func main() {
-    logger.SetupLogger(logger.ConfigSchema{
+    logger.SetupLogger(logger.Config{
         Level:    int8(zerolog.InfoLevel),
         Logstash: false,
     })
@@ -129,8 +129,11 @@ client, err := mongodb.Connect(ctx, mongodb.Config{
     Database: "myapp",
     Auth:     mongodb.AuthConfig{Username: "user", Password: "pass"},
 }, mongodb.WithAppName("my-service"))
-
+if err != nil {
+    log.Fatal(err)
+}
 defer client.Close(ctx)
+
 db := client.DB()
 ```
 
@@ -143,8 +146,11 @@ client, err := redis.Connect(ctx, redis.Config{
     Addr: "localhost:6379",
     Auth: redis.AuthConfig{Password: "secret"},
 }, redis.WithPoolSize(20))
-
+if err != nil {
+    log.Fatal(err)
+}
 defer client.Close()
+
 client.Unwrap().Set(ctx, "key", "value", 0)
 ```
 
@@ -225,7 +231,7 @@ healthcheck.RegisterChiWithChecks(router,
 | `pkg/canonical` | URL normalization (lowercase, strip tracking params, sort query, remove fragments/default ports) + SHA-256 hash. Thread-safe `AddTrackingParams` to extend the strip list. |
 | `pkg/dbutil` | `Open` / `OpenMySQL` with functional options (`WithMaxOpenConns`, `WithMaxIdleConns`, `WithConnMaxLifetime`, `WithConnMaxIdleTime`). Defaults: 25 open, 10 idle, 5m lifetime, 2m idle time. |
 | `pkg/mongodb` | MongoDB client wrapper with optional CSFLE auto-encryption (bypass mode). Functional options (`WithPingTimeout`, `WithAppName`, `WithDirectConnection`). Plain fallback DB for encrypted collections. |
-| `pkg/redis` | Redis client wrapper with standalone and Sentinel failover. Functional options (`WithPoolSize`, `WithMinIdleConns`, `WithDialTimeout`, `WithReadTimeout`, `WithWriteTimeout`). Defaults: pool 10, idle 2, dial 5s, read 3s, write 3s. |
+| `pkg/redis` | Redis client wrapper with standalone and Sentinel failover. Functional options (`WithPingTimeout`, `WithPoolSize`, `WithMinIdleConns`, `WithDialTimeout`, `WithReadTimeout`, `WithWriteTimeout`). Defaults: pool 10, idle 2, dial 5s, read 3s, write 3s. |
 | `pkg/uploads` | File storage with configurable categories. Defaults: images (JPEG/PNG/GIF/WebP, 10 MB) and audio (MP3/WAV/M4A/OGG, 50 MB). Magic-byte content validation, UUID filenames, path traversal protection. |
 | `pkg/envconfig` | `Required`, `Optional`, `OptionalBool` ("true"/"1"/"yes"), `OptionalStringSlice` (split + trim), `ResolveAbsPath`. |
 

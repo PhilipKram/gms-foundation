@@ -24,8 +24,18 @@ type AuthConfig struct {
 // CSFLEConfig holds Client-Side Field Level Encryption settings.
 type CSFLEConfig struct {
 	KeyVaultNamespace string // e.g. "encryption.__keyVault"
-	DEKName           string // data encryption key name
+	DEKName           string // logical name of the data encryption key
 	MasterKey         []byte // 96-byte local master key
+}
+
+// DataEncryptionKeyName returns the logical name of the data encryption key
+// associated with this CSFLE configuration. Callers can use this when
+// performing explicit encryption or decryption via Encryption().
+func (c *CSFLEConfig) DataEncryptionKeyName() string {
+	if c == nil {
+		return ""
+	}
+	return c.DEKName
 }
 
 // Config holds the settings needed to connect to MongoDB.
@@ -163,6 +173,10 @@ func Connect(ctx context.Context, cfg Config, opts ...Option) (*Client, error) {
 	clientOpts := buildClientOpts(cfg, cc)
 	csfleEnabled := cfg.CSFLE != nil
 
+	if csfleEnabled && len(cfg.CSFLE.MasterKey) != 96 {
+		return nil, fmt.Errorf("CSFLE MasterKey must be exactly 96 bytes, got %d", len(cfg.CSFLE.MasterKey))
+	}
+
 	if csfleEnabled {
 		autoEncryptionOpts := options.AutoEncryption().
 			SetKeyVaultNamespace(cfg.CSFLE.KeyVaultNamespace).
@@ -195,10 +209,12 @@ func Connect(ctx context.Context, cfg Config, opts ...Option) (*Client, error) {
 	if csfleEnabled {
 		plainOpts := buildClientOpts(cfg, cc)
 		plainClient, err := mongo.Connect(plainOpts)
-		if err == nil {
-			c.plainClient = plainClient
-			c.plainDB = plainClient.Database(cfg.Database)
+		if err != nil {
+			_ = c.Close(ctx)
+			return nil, fmt.Errorf("connecting plain MongoDB client: %w", err)
 		}
+		c.plainClient = plainClient
+		c.plainDB = plainClient.Database(cfg.Database)
 
 		ceOpts := options.ClientEncryption().
 			SetKeyVaultNamespace(cfg.CSFLE.KeyVaultNamespace).

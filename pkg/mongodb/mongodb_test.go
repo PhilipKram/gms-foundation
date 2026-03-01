@@ -98,13 +98,26 @@ func TestConnect_InvalidHost(t *testing.T) {
 	}
 }
 
-func TestClient_PlainDB_NilFallback(t *testing.T) {
-	// A Client without CSFLE should return the primary DB from PlainDB().
+func TestClient_PlainDB_FallbackToPrimary(t *testing.T) {
+	// When plainDB is nil (no CSFLE), PlainDB() falls back to the primary db.
 	c := &Client{
-		db: nil, // will be nil in this synthetic test
+		db: nil, // synthetic: both nil returns nil
 	}
 	if c.PlainDB() != nil {
 		t.Error("expected nil from PlainDB when both plainDB and db are nil")
+	}
+}
+
+func TestCSFLEConfig_DataEncryptionKeyName(t *testing.T) {
+	cfg := &CSFLEConfig{DEKName: "my-dek"}
+	if got := cfg.DataEncryptionKeyName(); got != "my-dek" {
+		t.Errorf("expected %q, got %q", "my-dek", got)
+	}
+
+	// nil receiver
+	var nilCfg *CSFLEConfig
+	if got := nilCfg.DataEncryptionKeyName(); got != "" {
+		t.Errorf("expected empty string for nil config, got %q", got)
 	}
 }
 

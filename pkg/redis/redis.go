@@ -29,6 +29,10 @@ type AuthConfig struct {
 type SentinelConfig struct {
 	MasterName string
 	Nodes      []string
+	// Username for authenticating with Sentinel nodes (optional).
+	Username string
+	// Password for authenticating with Sentinel nodes (optional).
+	Password string
 }
 
 // Config holds the settings needed to connect to Redis.
@@ -143,16 +147,18 @@ func Connect(ctx context.Context, cfg Config, opts ...Option) (*Client, error) {
 
 	if cfg.Sentinel != nil && cfg.Sentinel.MasterName != "" {
 		uc = goredis.NewFailoverClient(&goredis.FailoverOptions{
-			MasterName:    cfg.Sentinel.MasterName,
-			SentinelAddrs: cfg.Sentinel.Nodes,
-			Username:      cfg.Auth.Username,
-			Password:      cfg.Auth.Password,
-			DB:            cfg.DB,
-			PoolSize:      cc.PoolSize,
-			MinIdleConns:  cc.MinIdleConns,
-			DialTimeout:   cc.DialTimeout,
-			ReadTimeout:   cc.ReadTimeout,
-			WriteTimeout:  cc.WriteTimeout,
+			MasterName:       cfg.Sentinel.MasterName,
+			SentinelAddrs:    cfg.Sentinel.Nodes,
+			SentinelUsername: cfg.Sentinel.Username,
+			SentinelPassword: cfg.Sentinel.Password,
+			Username:         cfg.Auth.Username,
+			Password:         cfg.Auth.Password,
+			DB:               cfg.DB,
+			PoolSize:         cc.PoolSize,
+			MinIdleConns:     cc.MinIdleConns,
+			DialTimeout:      cc.DialTimeout,
+			ReadTimeout:      cc.ReadTimeout,
+			WriteTimeout:     cc.WriteTimeout,
 		})
 	} else {
 		uc = goredis.NewClient(&goredis.Options{

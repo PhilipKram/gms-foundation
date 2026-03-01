@@ -130,6 +130,10 @@ client, err := mongodb.Connect(ctx, mongodb.Config{
     Auth:     mongodb.AuthConfig{Username: "user", Password: "pass"},
 }, mongodb.WithAppName("my-service"))
 if err != nil {
+    // handle error (e.g., log and exit)
+    panic(err)
+}
+if err != nil {
     log.Fatal(err)
 }
 defer client.Close(ctx)

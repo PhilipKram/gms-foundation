@@ -9,13 +9,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        /* ============================================
+           1. DESIGN TOKENS
+           ============================================ */
         :root {
+            /* Colors */
             --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-card: rgba(255, 255, 255, 0.03);
-            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --bg-secondary: #111118;
+            --bg-tertiary: #16161f;
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --bg-glass-hover: rgba(255, 255, 255, 0.06);
+            --bg-glass-strong: rgba(255, 255, 255, 0.08);
             --border: rgba(255, 255, 255, 0.06);
             --border-hover: rgba(255, 255, 255, 0.12);
+            --border-strong: rgba(255, 255, 255, 0.15);
             --text-primary: #e4e4e7;
             --text-secondary: #a1a1aa;
             --text-muted: #71717a;
@@ -30,11 +37,60 @@
             --orange-dim: rgba(251, 146, 60, 0.12);
             --pink: #f472b6;
             --pink-dim: rgba(244, 114, 182, 0.12);
-            --radius: 12px;
+
+            /* Spacing scale */
+            --sp-1: 4px;
+            --sp-2: 8px;
+            --sp-3: 12px;
+            --sp-4: 16px;
+            --sp-5: 20px;
+            --sp-6: 24px;
+            --sp-8: 32px;
+            --sp-10: 40px;
+            --sp-12: 48px;
+            --sp-16: 64px;
+            --sp-20: 80px;
+            --sp-24: 96px;
+            --sp-30: 120px;
+
+            /* Typography scale */
+            --text-xs: 12px;
+            --text-sm: 13px;
+            --text-base: 14px;
+            --text-md: 15px;
+            --text-lg: 16px;
+            --text-xl: 18px;
+            --text-2xl: 20px;
+            --text-3xl: 24px;
+            --text-4xl: clamp(28px, 4vw, 40px);
+            --text-hero: clamp(40px, 6vw, 72px);
+
+            /* Radius */
+            --radius-sm: 6px;
+            --radius: 10px;
+            --radius-md: 12px;
             --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 40px var(--accent-glow);
+
+            /* Transitions */
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --duration-fast: 150ms;
+            --duration-base: 250ms;
+            --duration-slow: 400ms;
         }
 
-        * {
+        /* ============================================
+           2. RESET & BASE
+           ============================================ */
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -42,6 +98,7 @@
 
         html {
             scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
         }
 
         body {
@@ -50,76 +107,117 @@
             color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Ambient background */
-        .ambient {
-            position: fixed;
+        a { color: inherit; text-decoration: none; }
+        code { font-family: 'JetBrains Mono', monospace; }
+        button { font-family: inherit; }
+        img { display: block; max-width: 100%; }
+
+        /* ============================================
+           3. LAYOUT UTILITIES
+           ============================================ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--sp-6);
+        }
+
+        .glass-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition: background var(--duration-base) var(--ease-out),
+                        border-color var(--duration-base) var(--ease-out),
+                        transform var(--duration-base) var(--ease-out);
+        }
+
+        .glass-card:hover {
+            background: var(--bg-glass-hover);
+            border-color: var(--border-hover);
+        }
+
+        .gradient-border {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gradient-border::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), var(--cyan), transparent);
+            opacity: 0;
+            transition: opacity var(--duration-base) var(--ease-out);
+        }
+
+        .gradient-border:hover::before {
+            opacity: 1;
+        }
+
+        .bento-grid {
+            display: grid;
+            gap: var(--sp-4);
+        }
+
+        /* ============================================
+           4. BACKGROUND
+           ============================================ */
+        .bg-dots {
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-blobs {
+            position: fixed;
+            inset: 0;
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
         }
 
-        .ambient-orb {
+        .bg-blob {
             position: absolute;
             border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.3;
-            animation: float 20s ease-in-out infinite;
+            filter: blur(140px);
         }
 
-        .ambient-orb:nth-child(1) {
+        .bg-blob-1 {
             width: 600px;
             height: 600px;
             background: var(--accent);
             top: -200px;
             right: -100px;
-            opacity: 0.08;
+            opacity: 0.07;
         }
 
-        .ambient-orb:nth-child(2) {
+        .bg-blob-2 {
             width: 500px;
             height: 500px;
             background: var(--cyan);
             bottom: -150px;
             left: -100px;
-            opacity: 0.06;
-            animation-delay: -7s;
+            opacity: 0.05;
         }
 
-        .ambient-orb:nth-child(3) {
+        .bg-blob-3 {
             width: 400px;
             height: 400px;
             background: var(--green);
             top: 50%;
-            left: 50%;
-            opacity: 0.04;
-            animation-delay: -14s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.05); }
-            66% { transform: translate(-20px, 20px) scale(0.95); }
-        }
-
-        /* Grid pattern overlay */
-        .grid-pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: 0;
+            left: 40%;
+            opacity: 0.03;
         }
 
         .content-wrapper {
@@ -127,22 +225,26 @@
             z-index: 1;
         }
 
-        /* Navigation */
-        nav {
+        /* ============================================
+           5. NAVIGATION
+           ============================================ */
+        .nav {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 100;
-            padding: 0 24px;
-            transition: all 0.3s ease;
+            padding: 0 var(--sp-6);
+            transition: background var(--duration-base) var(--ease-out),
+                        border-color var(--duration-base) var(--ease-out);
+            border-bottom: 1px solid transparent;
         }
 
-        nav.scrolled {
-            background: rgba(10, 10, 15, 0.8);
+        .nav-scrolled {
+            background: rgba(10, 10, 15, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            border-bottom-color: var(--border);
         }
 
         .nav-inner {
@@ -157,57 +259,72 @@
         .nav-logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: var(--sp-3);
             font-weight: 700;
-            font-size: 18px;
-            text-decoration: none;
-            color: var(--text-primary);
+            font-size: var(--text-xl);
         }
 
         .nav-logo-icon {
             width: 32px;
             height: 32px;
             background: linear-gradient(135deg, var(--accent), var(--cyan));
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: var(--text-lg);
             font-weight: 800;
             color: var(--bg-primary);
         }
 
         .nav-links {
             display: flex;
-            gap: 32px;
+            gap: var(--sp-8);
             list-style: none;
         }
 
-        .nav-links a {
+        .nav-link {
             color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 14px;
+            font-size: var(--text-base);
             font-weight: 500;
-            transition: color 0.2s;
+            transition: color var(--duration-fast);
+            position: relative;
         }
 
-        .nav-links a:hover {
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+            transform: scaleX(0);
+            transition: transform var(--duration-base) var(--ease-out);
+        }
+
+        .nav-link:hover,
+        .nav-link-active {
             color: var(--text-primary);
+        }
+
+        .nav-link-active::after {
+            transform: scaleX(1);
         }
 
         .nav-cta {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
+            gap: var(--sp-2);
+            padding: var(--sp-2) var(--sp-4);
             background: var(--accent-dim);
             border: 1px solid rgba(129, 140, 248, 0.2);
-            border-radius: 8px;
+            border-radius: var(--radius);
             color: var(--accent);
-            text-decoration: none;
-            font-size: 14px;
+            font-size: var(--text-base);
             font-weight: 500;
-            transition: all 0.2s;
+            transition: all var(--duration-fast);
         }
 
         .nav-cta:hover {
@@ -215,12 +332,120 @@
             border-color: rgba(129, 140, 248, 0.3);
         }
 
-        .nav-cta svg {
-            width: 16px;
-            height: 16px;
+        .nav-cta svg { width: 16px; height: 16px; }
+
+        /* Hamburger */
+        .nav-hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: var(--sp-2);
+            color: var(--text-primary);
+            z-index: 110;
         }
 
-        /* Hero */
+        .hamburger-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 22px;
+        }
+
+        .hamburger-line {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: currentColor;
+            border-radius: 1px;
+            transition: transform var(--duration-base) var(--ease-out),
+                        opacity var(--duration-fast);
+            transform-origin: center;
+        }
+
+        .nav-hamburger-open .hamburger-line:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+
+        .nav-hamburger-open .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .nav-hamburger-open .hamburger-line:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+
+        /* Mobile slide-out */
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 99;
+            opacity: 0;
+            transition: opacity var(--duration-base) var(--ease-out);
+        }
+
+        .nav-overlay-visible {
+            opacity: 1;
+        }
+
+        .nav-mobile {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 280px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            z-index: 105;
+            padding: var(--sp-20) var(--sp-6) var(--sp-6);
+            transform: translateX(100%);
+            transition: transform var(--duration-slow) var(--ease-out);
+            display: none;
+            flex-direction: column;
+            gap: var(--sp-2);
+        }
+
+        .nav-mobile-open {
+            transform: translateX(0);
+        }
+
+        .nav-mobile-link {
+            display: block;
+            padding: var(--sp-3) var(--sp-4);
+            color: var(--text-secondary);
+            font-size: var(--text-lg);
+            font-weight: 500;
+            border-radius: var(--radius);
+            transition: all var(--duration-fast);
+        }
+
+        .nav-mobile-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-glass);
+        }
+
+        .nav-mobile-cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--sp-2);
+            margin-top: var(--sp-4);
+            padding: var(--sp-3) var(--sp-4);
+            background: var(--accent-dim);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            border-radius: var(--radius);
+            color: var(--accent);
+            font-size: var(--text-base);
+            font-weight: 500;
+        }
+
+        .nav-mobile-cta svg { width: 16px; height: 16px; }
+
+        /* ============================================
+           6. HERO
+           ============================================ */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -228,23 +453,42 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 120px 24px 80px;
+            padding: var(--sp-30) var(--sp-6) var(--sp-20);
             max-width: 900px;
             margin: 0 auto;
+            position: relative;
         }
 
         .hero-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
-            background: var(--bg-card);
+            gap: var(--sp-2);
+            padding: var(--sp-2) var(--sp-4);
+            background: var(--bg-glass);
             border: 1px solid var(--border);
-            border-radius: 100px;
-            font-size: 13px;
+            border-radius: var(--radius-full);
+            font-size: var(--text-sm);
             color: var(--text-secondary);
-            margin-bottom: 32px;
-            animation: fadeInUp 0.6s ease;
+            margin-bottom: var(--sp-8);
+            animation: hero-fade-in 0.8s var(--ease-out) both;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero-badge::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .hero-badge-dot {
@@ -260,79 +504,77 @@
             50% { opacity: 0.4; }
         }
 
-        .hero h1 {
-            font-size: clamp(40px, 6vw, 72px);
+        .hero-title {
+            font-size: var(--text-hero);
             font-weight: 800;
             line-height: 1.05;
             letter-spacing: -0.03em;
-            margin-bottom: 24px;
-            animation: fadeInUp 0.6s ease 0.1s both;
+            margin-bottom: var(--sp-6);
+            animation: hero-fade-in 0.8s var(--ease-out) 0.1s both;
         }
 
-        .hero h1 .gradient-text {
+        .gradient-text {
             background: linear-gradient(135deg, var(--accent) 0%, var(--cyan) 50%, var(--green) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .hero p {
-            font-size: 18px;
+        .hero-desc {
+            font-size: var(--text-xl);
             line-height: 1.7;
             color: var(--text-secondary);
             max-width: 600px;
-            margin-bottom: 40px;
-            animation: fadeInUp 0.6s ease 0.2s both;
+            margin-bottom: var(--sp-10);
+            animation: hero-fade-in 0.8s var(--ease-out) 0.2s both;
         }
 
         .hero-actions {
             display: flex;
-            gap: 12px;
+            gap: var(--sp-3);
             flex-wrap: wrap;
             justify-content: center;
-            animation: fadeInUp 0.6s ease 0.3s both;
+            animation: hero-fade-in 0.8s var(--ease-out) 0.3s both;
         }
 
         .btn-primary {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
+            gap: var(--sp-2);
+            padding: var(--sp-3) var(--sp-6);
             background: var(--accent);
             color: var(--bg-primary);
             border: none;
-            border-radius: 10px;
-            font-size: 15px;
+            border-radius: var(--radius);
+            font-size: var(--text-md);
             font-weight: 600;
-            text-decoration: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--duration-fast);
         }
 
         .btn-primary:hover {
             background: #9ba3fc;
             transform: translateY(-1px);
-            box-shadow: 0 8px 24px var(--accent-glow);
+            box-shadow: var(--shadow-glow);
         }
 
         .btn-secondary {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: var(--bg-card);
+            gap: var(--sp-2);
+            padding: var(--sp-3) var(--sp-6);
+            background: var(--bg-glass);
             color: var(--text-primary);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 15px;
+            border-radius: var(--radius);
+            font-size: var(--text-md);
             font-weight: 500;
-            text-decoration: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--duration-fast);
         }
 
         .btn-secondary:hover {
-            background: var(--bg-card-hover);
+            background: var(--bg-glass-hover);
             border-color: var(--border-hover);
             transform: translateY(-1px);
         }
@@ -340,94 +582,95 @@
         .install-bar {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-top: 48px;
-            padding: 14px 20px;
+            gap: var(--sp-3);
+            margin-top: var(--sp-12);
+            padding: var(--sp-4) var(--sp-5);
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            animation: fadeInUp 0.6s ease 0.4s both;
+            border-radius: var(--radius-md);
+            animation: hero-fade-in 0.8s var(--ease-out) 0.4s both;
+            position: relative;
         }
 
         .install-bar code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
+            font-size: var(--text-base);
             color: var(--text-secondary);
         }
 
-        .install-bar code span {
+        .install-bar code .hl {
             color: var(--green);
         }
 
-        .install-bar .copy-btn {
+        .copy-btn {
             background: none;
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: color 0.2s;
+            padding: var(--sp-1);
+            border-radius: var(--sp-1);
+            transition: color var(--duration-fast);
             display: flex;
+            position: relative;
         }
 
-        .install-bar .copy-btn:hover {
-            color: var(--text-primary);
+        .copy-btn:hover { color: var(--text-primary); }
+
+        .copy-btn svg { width: 16px; height: 16px; }
+
+        .copy-btn .icon-check { display: none; color: var(--green); }
+        .copy-btn-copied .icon-clipboard { display: none; }
+        .copy-btn-copied .icon-check { display: block; }
+
+        .copy-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            padding: var(--sp-1) var(--sp-2);
+            background: var(--green);
+            color: var(--bg-primary);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            border-radius: var(--sp-1);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--duration-fast);
         }
 
-        @keyframes fadeInUp {
+        .copy-btn-copied .copy-tooltip {
+            opacity: 1;
+        }
+
+        @keyframes hero-fade-in {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Section common */
-        section {
-            padding: 100px 24px;
-            max-width: 1200px;
-            margin: 0 auto;
+        /* ============================================
+           7. STATS STRIP
+           ============================================ */
+        .stats-wrapper {
+            margin-top: -40px;
+            position: relative;
+            z-index: 2;
         }
 
-        .section-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--accent);
-            margin-bottom: 16px;
-        }
-
-        .section-title {
-            font-size: clamp(28px, 4vw, 40px);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 16px;
-        }
-
-        .section-desc {
-            font-size: 16px;
-            color: var(--text-secondary);
-            max-width: 560px;
-            line-height: 1.7;
-            margin-bottom: 48px;
-        }
-
-        /* Stats bar */
-        .stats {
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 1px;
             background: var(--border);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-xl);
             overflow: hidden;
-            margin-bottom: 100px;
+            box-shadow: var(--shadow-lg);
         }
 
-        .stat {
+        .stat-card {
             background: var(--bg-secondary);
-            padding: 32px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: var(--sp-8);
             text-align: center;
         }
 
@@ -435,141 +678,242 @@
             font-size: 32px;
             font-weight: 700;
             letter-spacing: -0.02em;
-            margin-bottom: 4px;
+            margin-bottom: var(--sp-1);
         }
 
+        .stat-value-accent { color: var(--accent); }
+        .stat-value-cyan { color: var(--cyan); }
+        .stat-value-green { color: var(--green); }
+        .stat-value-orange { color: var(--orange); }
+
         .stat-label {
-            font-size: 13px;
+            font-size: var(--text-sm);
             color: var(--text-muted);
             font-weight: 500;
         }
 
-        /* Feature cards */
-        .features-grid {
-            display: grid;
+        /* ============================================
+           8. SECTION COMMON
+           ============================================ */
+        .section {
+            padding: var(--sp-24) var(--sp-6);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--sp-2);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            margin-bottom: var(--sp-4);
+        }
+
+        .section-title {
+            font-size: var(--text-4xl);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--sp-4);
+        }
+
+        .section-desc {
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+            max-width: 560px;
+            line-height: 1.7;
+            margin-bottom: var(--sp-12);
+        }
+
+        /* ============================================
+           9. WHY GMS (FEATURES BENTO)
+           ============================================ */
+        .features-bento {
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
         }
 
         .feature-card {
-            padding: 28px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
+            padding: var(--sp-8);
         }
 
         .feature-card:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-hover);
             transform: translateY(-2px);
         }
 
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-
         .feature-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 16px;
-            font-size: 18px;
+            margin-bottom: var(--sp-4);
         }
 
-        .feature-icon.indigo { background: var(--accent-dim); color: var(--accent); }
-        .feature-icon.green { background: var(--green-dim); color: var(--green); }
-        .feature-icon.cyan { background: var(--cyan-dim); color: var(--cyan); }
-        .feature-icon.orange { background: var(--orange-dim); color: var(--orange); }
-        .feature-icon.pink { background: var(--pink-dim); color: var(--pink); }
+        .feature-icon svg { width: 20px; height: 20px; }
 
-        .feature-card h3 {
-            font-size: 16px;
+        .feature-icon-accent { background: var(--accent-dim); color: var(--accent); }
+        .feature-icon-green { background: var(--green-dim); color: var(--green); }
+        .feature-icon-cyan { background: var(--cyan-dim); color: var(--cyan); }
+        .feature-icon-orange { background: var(--orange-dim); color: var(--orange); }
+        .feature-icon-pink { background: var(--pink-dim); color: var(--pink); }
+
+        .feature-title {
+            font-size: var(--text-lg);
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: var(--sp-2);
         }
 
-        .feature-card p {
-            font-size: 14px;
+        .feature-desc {
+            font-size: var(--text-base);
             color: var(--text-secondary);
             line-height: 1.6;
         }
 
-        /* Packages section */
+        /* Wide card spans 2 cols on desktop */
+        .feature-card-wide {
+            grid-column: span 1;
+        }
+
+        /* ============================================
+           10. TABS COMPONENT
+           ============================================ */
+        .tabs-bar {
+            display: flex;
+            gap: var(--sp-1);
+            padding: var(--sp-1);
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            width: fit-content;
+            margin-bottom: var(--sp-8);
+        }
+
+        .tab-btn {
+            padding: var(--sp-2) var(--sp-5);
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all var(--duration-fast);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .tab-btn-active {
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            animation: tab-fade-in var(--duration-base) var(--ease-out);
+        }
+
+        .tab-content-active {
+            display: block;
+        }
+
+        @keyframes tab-fade-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           11. PACKAGES
+           ============================================ */
         .packages-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            gap: var(--sp-4);
         }
 
         .package-card {
             display: flex;
             align-items: flex-start;
-            gap: 16px;
-            padding: 24px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            transition: all 0.3s ease;
+            gap: var(--sp-4);
+            padding: var(--sp-6);
         }
 
-        .package-card:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-hover);
+        .package-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        .package-icon svg { width: 18px; height: 18px; }
 
         .package-name {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
+            font-size: var(--text-base);
             font-weight: 500;
             color: var(--accent);
-            margin-bottom: 6px;
+            margin-bottom: var(--sp-1);
         }
 
         .package-desc {
-            font-size: 14px;
+            font-size: var(--text-base);
             color: var(--text-secondary);
             line-height: 1.5;
         }
 
-        .package-icon {
-            width: 36px;
-            height: 36px;
-            min-width: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        /* Code example */
-        .code-section {
+        /* ============================================
+           12. QUICK START (CODE)
+           ============================================ */
+        .code-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            gap: var(--sp-6);
             align-items: start;
         }
 
-        .code-info {
-            padding-top: 16px;
+        .code-info-title {
+            font-size: var(--text-2xl);
+            font-weight: 600;
+            margin-bottom: var(--sp-3);
+        }
+
+        .code-info-desc {
+            font-size: var(--text-base);
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--sp-6);
+        }
+
+        .code-info-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--sp-3);
+            list-style: none;
+        }
+
+        .code-info-item {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-3);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        .code-info-dot {
+            width: 6px;
+            height: 6px;
+            min-width: 6px;
+            background: var(--green);
+            border-radius: 50%;
         }
 
         .code-block {
@@ -583,7 +927,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 16px;
+            padding: var(--sp-3) var(--sp-4);
             border-bottom: 1px solid var(--border);
         }
 
@@ -601,18 +945,24 @@
 
         .code-filename {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-size: var(--text-xs);
             color: var(--text-muted);
         }
 
+        .code-header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-3);
+        }
+
         .code-content {
-            padding: 20px;
+            padding: var(--sp-5);
             overflow-x: auto;
         }
 
         .code-content pre {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: var(--text-sm);
             line-height: 1.7;
             color: var(--text-secondary);
         }
@@ -624,80 +974,168 @@
         .code-content .typ { color: var(--orange); }
         .code-content .num { color: var(--pink); }
 
-        /* Compatibility table */
+        /* ============================================
+           13. ARCHITECTURE
+           ============================================ */
+        .arch-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--sp-6);
+            align-items: start;
+        }
+
+        .arch-diagram {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--sp-10);
+        }
+
+        .arch-layer {
+            margin-bottom: var(--sp-4);
+        }
+
+        .arch-layer:last-child { margin-bottom: 0; }
+
+        .arch-layer-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: var(--sp-2);
+        }
+
+        .arch-items {
+            display: flex;
+            gap: var(--sp-2);
+            flex-wrap: wrap;
+        }
+
+        .arch-item {
+            padding: var(--sp-2) var(--sp-4);
+            border-radius: var(--radius);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+
+        .arch-item-infra {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid rgba(129, 140, 248, 0.15);
+        }
+
+        .arch-item-util {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(52, 211, 153, 0.15);
+        }
+
+        .arch-item-auth {
+            background: var(--cyan-dim);
+            color: var(--cyan);
+            border: 1px solid rgba(34, 211, 238, 0.15);
+        }
+
+        .arch-connector {
+            display: flex;
+            justify-content: center;
+            padding: var(--sp-1) 0;
+            color: var(--text-muted);
+        }
+
+        /* Router compatibility card */
+        .compat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .compat-card-header {
+            padding: var(--sp-6);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .compat-card-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--sp-2);
+        }
+
+        .compat-card-desc {
+            font-size: var(--text-base);
+            color: var(--text-secondary);
+        }
+
         .compat-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 24px;
         }
 
         .compat-table th,
         .compat-table td {
-            padding: 14px 20px;
+            padding: var(--sp-4) var(--sp-6);
             text-align: left;
             border-bottom: 1px solid var(--border);
-            font-size: 14px;
+            font-size: var(--text-base);
         }
 
         .compat-table th {
             color: var(--text-muted);
             font-weight: 500;
-            font-size: 12px;
+            font-size: var(--text-xs);
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
 
         .compat-table td {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: var(--text-sm);
             color: var(--text-secondary);
         }
 
-        .compat-table tr:last-child td {
-            border-bottom: none;
+        .compat-table tr:last-child td { border-bottom: none; }
+
+        .compat-router-name {
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
         }
 
-        .compat-check {
-            color: var(--green);
+        .compat-version {
+            color: var(--text-muted);
         }
 
-        /* Tech stack */
-        .tech-grid {
-            display: grid;
+        /* ============================================
+           14. TECH STACK
+           ============================================ */
+        .tech-bento {
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 12px;
         }
 
         .tech-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 14px 16px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            transition: all 0.2s;
-        }
-
-        .tech-item:hover {
-            border-color: var(--border-hover);
-            background: var(--bg-card-hover);
+            gap: var(--sp-3);
+            padding: var(--sp-4);
         }
 
         .tech-icon {
-            width: 28px;
-            height: 28px;
-            min-width: 28px;
-            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: var(--text-base);
             font-weight: 700;
         }
 
         .tech-name {
-            font-size: 13px;
+            font-size: var(--text-sm);
             font-weight: 500;
         }
 
@@ -707,239 +1145,327 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Architecture */
-        .arch-diagram {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 40px;
-            margin-top: 24px;
-        }
-
-        .arch-layer {
-            margin-bottom: 16px;
-        }
-
-        .arch-layer:last-child {
-            margin-bottom: 0;
-        }
-
-        .arch-layer-label {
-            font-size: 11px;
+        /* CI/CD sub-section */
+        .ci-subtitle {
+            font-size: var(--text-2xl);
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-top: var(--sp-16);
+            margin-bottom: var(--sp-3);
         }
 
-        .arch-items {
+        .ci-desc {
+            font-size: var(--text-base);
+            color: var(--text-secondary);
+            margin-bottom: var(--sp-6);
+        }
+
+        .ci-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: var(--sp-3);
+        }
+
+        .ci-item {
+            padding: var(--sp-5);
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: var(--sp-1);
         }
 
-        .arch-item {
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+        .ci-item-name {
+            font-size: var(--text-sm);
             font-weight: 500;
+            color: var(--text-primary);
         }
 
-        .arch-item.infra {
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid rgba(129, 140, 248, 0.15);
-        }
-
-        .arch-item.util {
-            background: var(--green-dim);
-            color: var(--green);
-            border: 1px solid rgba(52, 211, 153, 0.15);
-        }
-
-        .arch-item.auth {
-            background: var(--cyan-dim);
-            color: var(--cyan);
-            border: 1px solid rgba(34, 211, 238, 0.15);
-        }
-
-        .arch-connector {
-            display: flex;
-            justify-content: center;
-            padding: 4px 0;
+        .ci-item-desc {
+            font-size: var(--text-xs);
             color: var(--text-muted);
-            font-size: 14px;
         }
 
-        /* Footer */
-        footer {
+        /* ============================================
+           15. FOOTER
+           ============================================ */
+        .footer {
             border-top: 1px solid var(--border);
-            padding: 40px 24px;
-            margin-top: 60px;
+            padding: var(--sp-12) var(--sp-6);
+            margin-top: var(--sp-16);
         }
 
         .footer-inner {
             max-width: 1200px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: var(--sp-10);
+            align-items: start;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: var(--sp-3);
+        }
+
+        .footer-brand-name {
+            font-weight: 700;
+            font-size: var(--text-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--sp-2);
+        }
+
+        .footer-brand-text {
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .footer-badges {
+            display: flex;
+            gap: var(--sp-2);
+            margin-top: var(--sp-2);
+        }
+
+        .footer-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--sp-1) var(--sp-3);
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .footer-col-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: var(--sp-4);
+        }
+
+        .footer-col-links {
+            display: flex;
+            flex-direction: column;
+            gap: var(--sp-3);
+        }
+
+        .footer-link {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            transition: color var(--duration-fast);
+        }
+
+        .footer-link:hover { color: var(--text-primary); }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: var(--sp-8) auto 0;
+            padding-top: var(--sp-6);
+            border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .footer-left {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .footer-text {
-            font-size: 13px;
+        .footer-copyright {
+            font-size: var(--text-sm);
             color: var(--text-muted);
         }
 
-        .footer-links {
+        .back-to-top {
             display: flex;
-            gap: 20px;
+            align-items: center;
+            gap: var(--sp-2);
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color var(--duration-fast);
         }
 
-        .footer-links a {
-            font-size: 13px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
+        .back-to-top:hover { color: var(--text-primary); }
+        .back-to-top svg { width: 14px; height: 14px; }
 
-        .footer-links a:hover {
-            color: var(--text-primary);
-        }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .packages-grid {
-                grid-template-columns: 1fr;
-            }
-            .code-section {
-                grid-template-columns: 1fr;
-            }
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .nav-links {
-                display: none;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            .stats {
-                grid-template-columns: 1fr;
-            }
-            .hero-actions {
-                flex-direction: column;
-                width: 100%;
-            }
-            .btn-primary, .btn-secondary {
-                justify-content: center;
-            }
-            .install-bar {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .footer-inner {
-                flex-direction: column;
-                gap: 16px;
-                text-align: center;
-            }
-            .footer-left {
-                flex-direction: column;
-                gap: 12px;
-            }
-            .arch-diagram {
-                padding: 20px;
-            }
-        }
-
-        /* Scroll reveal */
+        /* ============================================
+           16. SCROLL REVEAL
+           ============================================ */
         .reveal {
             opacity: 0;
             transform: translateY(24px);
-            transition: all 0.6s ease;
+            transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
         }
 
-        .reveal.visible {
+        .reveal-visible {
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Mobile nav toggle */
-        .nav-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            padding: 8px;
+        .reveal-stagger > .reveal {
+            transition-delay: calc(var(--reveal-delay, 0) * 80ms);
         }
 
-        @media (max-width: 900px) {
-            .nav-toggle {
-                display: flex;
+        /* ============================================
+           17. RESPONSIVE — 1024px
+           ============================================ */
+        @media (max-width: 1024px) {
+            .nav-links { display: none; }
+            .nav-cta { display: none; }
+            .nav-hamburger { display: flex; }
+            .nav-overlay { display: block; }
+            .nav-mobile { display: flex; }
+
+            .features-bento { grid-template-columns: repeat(2, 1fr); }
+            .packages-grid { grid-template-columns: 1fr; }
+            .code-layout { grid-template-columns: 1fr; }
+            .arch-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ============================================
+           18. RESPONSIVE — 640px
+           ============================================ */
+        @media (max-width: 640px) {
+            .features-bento { grid-template-columns: 1fr; }
+
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
             }
+
+            .btn-primary, .btn-secondary { justify-content: center; }
+
+            .install-bar {
+                flex-direction: column;
+                gap: var(--sp-2);
+                text-align: center;
+            }
+
+            .footer-inner {
+                grid-template-columns: 1fr;
+                gap: var(--sp-8);
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: var(--sp-4);
+                text-align: center;
+            }
+
+            .arch-diagram { padding: var(--sp-5); }
+
+            .tech-bento { grid-template-columns: repeat(2, 1fr); }
+
+            .section { padding: var(--sp-16) var(--sp-4); }
+
+            .compat-table th:nth-child(4),
+            .compat-table td:nth-child(4) { display: none; }
+        }
+
+        /* ============================================
+           19. ACCESSIBILITY
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            html { scroll-behavior: auto; }
+
+            .reveal {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* ============================================
+           20. BODY SCROLL LOCK
+           ============================================ */
+        .body-locked {
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
-    <div class="ambient">
-        <div class="ambient-orb"></div>
-        <div class="ambient-orb"></div>
-        <div class="ambient-orb"></div>
+    <!-- Background -->
+    <div class="bg-blobs">
+        <div class="bg-blob bg-blob-1"></div>
+        <div class="bg-blob bg-blob-2"></div>
+        <div class="bg-blob bg-blob-3"></div>
     </div>
-    <div class="grid-pattern"></div>
+    <div class="bg-dots"></div>
 
     <div class="content-wrapper">
-        <!-- Navigation -->
-        <nav id="navbar">
+        <!-- ==================== NAV ==================== -->
+        <nav class="nav" id="navbar">
             <div class="nav-inner">
-                <a href="#" class="nav-logo">
+                <a href="#top" class="nav-logo">
                     <div class="nav-logo-icon">G</div>
                     GMS Foundation
                 </a>
                 <ul class="nav-links">
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#packages">Packages</a></li>
-                    <li><a href="#quickstart">Quick Start</a></li>
-                    <li><a href="#architecture">Architecture</a></li>
-                    <li><a href="#tech">Stack</a></li>
+                    <li><a href="#features" class="nav-link" data-nav>Features</a></li>
+                    <li><a href="#packages" class="nav-link" data-nav>Packages</a></li>
+                    <li><a href="#quickstart" class="nav-link" data-nav>Quick Start</a></li>
+                    <li><a href="#architecture" class="nav-link" data-nav>Architecture</a></li>
+                    <li><a href="#tech" class="nav-link" data-nav>Stack</a></li>
                 </ul>
-                <a href="https://github.com/PhilipKram/gms-foundation" class="nav-cta" target="_blank">
+                <a href="https://github.com/PhilipKram/gms-foundation" class="nav-cta" target="_blank" rel="noopener">
                     <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                     GitHub
                 </a>
+                <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation menu">
+                    <span class="hamburger-lines">
+                        <span class="hamburger-line"></span>
+                        <span class="hamburger-line"></span>
+                        <span class="hamburger-line"></span>
+                    </span>
+                </button>
             </div>
         </nav>
 
-        <!-- Hero -->
+        <!-- Mobile overlay + panel -->
+        <div class="nav-overlay" id="nav-overlay"></div>
+        <div class="nav-mobile" id="nav-mobile">
+            <a href="#features" class="nav-mobile-link" data-mobile-link>Features</a>
+            <a href="#packages" class="nav-mobile-link" data-mobile-link>Packages</a>
+            <a href="#quickstart" class="nav-mobile-link" data-mobile-link>Quick Start</a>
+            <a href="#architecture" class="nav-mobile-link" data-mobile-link>Architecture</a>
+            <a href="#tech" class="nav-mobile-link" data-mobile-link>Stack</a>
+            <a href="https://github.com/PhilipKram/gms-foundation" class="nav-mobile-cta" target="_blank" rel="noopener">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                GitHub
+            </a>
+        </div>
+
+        <!-- ==================== HERO ==================== -->
         <section class="hero" id="top">
             <div class="hero-badge">
                 <span class="hero-badge-dot"></span>
                 Production-Ready &middot; Go 1.24 &middot; MIT License
             </div>
-            <h1>
+            <h1 class="hero-title">
                 Build Robust<br>
                 <span class="gradient-text">HTTP Services</span>
             </h1>
-            <p>
+            <p class="hero-desc">
                 A curated collection of production-grade Go packages for structured logging, health checks, metrics, middleware, and application utilities. Drop-in foundations for your next service.
             </p>
             <div class="hero-actions">
-                <a href="https://github.com/PhilipKram/gms-foundation" class="btn-primary" target="_blank">
+                <a href="https://github.com/PhilipKram/gms-foundation" class="btn-primary" target="_blank" rel="noopener">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                     View on GitHub
                 </a>
@@ -949,264 +1475,322 @@
                 </a>
             </div>
             <div class="install-bar">
-                <code>$ <span>go get</span> github.com/PhilipKram/gms-foundation</code>
-                <button class="copy-btn" onclick="navigator.clipboard.writeText('go get github.com/PhilipKram/gms-foundation')" title="Copy">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                <code>$ <span class="hl">go get</span> github.com/PhilipKram/gms-foundation</code>
+                <button class="copy-btn" data-copy="go get github.com/PhilipKram/gms-foundation" title="Copy to clipboard">
+                    <svg class="icon-clipboard" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    <svg class="icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="copy-tooltip">Copied!</span>
                 </button>
             </div>
         </section>
 
-        <!-- Stats -->
-        <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
-            <div class="stats reveal">
-                <div class="stat">
-                    <div class="stat-value" style="color: var(--accent);">13</div>
+        <!-- ==================== STATS ==================== -->
+        <div class="stats-wrapper container">
+            <div class="stats-grid reveal">
+                <div class="stat-card">
+                    <div class="stat-value stat-value-accent" data-count="15">0</div>
                     <div class="stat-label">Packages</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value" style="color: var(--cyan);">Go 1.24</div>
+                <div class="stat-card">
+                    <div class="stat-value stat-value-cyan">Go 1.24</div>
                     <div class="stat-label">Go Version</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value" style="color: var(--green);">2</div>
+                <div class="stat-card">
+                    <div class="stat-value stat-value-green" data-count="2">0</div>
                     <div class="stat-label">Router Support</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value" style="color: var(--orange);">MIT</div>
+                <div class="stat-card">
+                    <div class="stat-value stat-value-orange">MIT</div>
                     <div class="stat-label">License</div>
                 </div>
             </div>
         </div>
 
-        <!-- Features -->
-        <section id="features">
-            <div class="section-label reveal">Core Capabilities</div>
+        <!-- ==================== WHY GMS (Features) ==================== -->
+        <section class="section" id="features">
+            <div class="section-label reveal">Why GMS Foundation</div>
             <h2 class="section-title reveal">Everything you need to ship</h2>
             <p class="section-desc reveal">
                 Battle-tested components that handle infrastructure plumbing so you can focus on business logic.
             </p>
-            <div class="features-grid">
-                <div class="feature-card reveal">
-                    <div class="feature-icon indigo">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <div class="bento-grid features-bento reveal-stagger">
+                <div class="glass-card gradient-border feature-card reveal" style="--reveal-delay: 0">
+                    <div class="feature-icon feature-icon-accent">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     </div>
-                    <h3>Structured Logging</h3>
-                    <p>Zerolog-based logging with console and JSON (Logstash/ELK) output modes, configurable levels, and custom writers.</p>
+                    <h3 class="feature-title">Structured Logging</h3>
+                    <p class="feature-desc">Zerolog-based logging with console and JSON (Logstash/ELK) output modes, configurable levels, and custom writers.</p>
                 </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon green">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <div class="glass-card gradient-border feature-card reveal" style="--reveal-delay: 1">
+                    <div class="feature-icon feature-icon-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                     </div>
-                    <h3>Health Checks</h3>
-                    <p>Kubernetes-compatible readiness and liveness endpoints with custom check function support for both Gin and Chi.</p>
+                    <h3 class="feature-title">Health Checks</h3>
+                    <p class="feature-desc">Kubernetes-compatible readiness and liveness endpoints with custom check function support for both Gin and Chi.</p>
                 </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon cyan">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div class="glass-card gradient-border feature-card reveal" style="--reveal-delay: 2">
+                    <div class="feature-icon feature-icon-cyan">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
-                    <h3>Prometheus Metrics</h3>
-                    <p>Automatic <code>/metrics</code> endpoint registration. Expose runtime and application metrics in Prometheus format.</p>
+                    <h3 class="feature-title">Prometheus Metrics</h3>
+                    <p class="feature-desc">Automatic <code>/metrics</code> endpoint registration. Expose runtime and application metrics in Prometheus format.</p>
                 </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon orange">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <div class="glass-card gradient-border feature-card reveal" style="--reveal-delay: 3">
+                    <div class="feature-icon feature-icon-orange">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     </div>
-                    <h3>OAuth2 + PKCE</h3>
-                    <p>Production OAuth2 flows for Google and Apple with PKCE support, token exchange, and user profile retrieval.</p>
+                    <h3 class="feature-title">OAuth2 + PKCE</h3>
+                    <p class="feature-desc">Production OAuth2 flows for Google and Apple with PKCE support, token exchange, and user profile retrieval.</p>
                 </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon pink">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                <div class="glass-card gradient-border feature-card reveal" style="--reveal-delay: 4">
+                    <div class="feature-icon feature-icon-pink">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                     </div>
-                    <h3>HTTP Middleware</h3>
-                    <p>Request logging with path exclusions, CORS configuration, panic recovery, and request timeout enforcement.</p>
+                    <h3 class="feature-title">HTTP Middleware</h3>
+                    <p class="feature-desc">Request logging with path exclusions, CORS configuration, panic recovery, and request timeout enforcement.</p>
                 </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon indigo">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                <div class="glass-card gradient-border feature-card reveal" style="--reveal-delay: 5">
+                    <div class="feature-icon feature-icon-accent">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
                     </div>
-                    <h3>File Uploads</h3>
-                    <p>Configurable categories with MIME type validation, magic-byte verification, UUID filenames, and path traversal protection.</p>
+                    <h3 class="feature-title">File Uploads</h3>
+                    <p class="feature-desc">Configurable categories with MIME type validation, magic-byte verification, UUID filenames, and path traversal protection.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Packages -->
-        <section id="packages">
+        <!-- ==================== PACKAGES ==================== -->
+        <section class="section" id="packages">
             <div class="section-label reveal">Package Reference</div>
-            <h2 class="section-title reveal">13 packages, zero boilerplate</h2>
+            <h2 class="section-title reveal">15 packages, zero boilerplate</h2>
             <p class="section-desc reveal">
                 Each package follows Go best practices with functional options, sensible defaults, and minimal dependencies.
             </p>
 
-            <h3 style="font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 16px;" class="reveal">Infrastructure</h3>
-            <div class="packages-grid reveal" style="margin-bottom: 32px;">
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--accent-dim); color: var(--accent);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div class="tabs-bar reveal" id="packages-tabs">
+                <button class="tab-btn tab-btn-active" data-tab="pkg-infra">Infrastructure</button>
+                <button class="tab-btn" data-tab="pkg-util">Utilities</button>
+                <button class="tab-btn" data-tab="pkg-auth">Auth</button>
+            </div>
+
+            <!-- Infrastructure -->
+            <div class="tab-content tab-content-active" data-tab-content="pkg-infra">
+                <div class="packages-grid">
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-accent">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/logger</div>
+                            <div class="package-desc">Structured logging via zerolog. Console and JSON (Logstash) output, configurable levels, custom writers.</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="package-name">pkg/logger</div>
-                        <div class="package-desc">Structured logging via zerolog. Console and JSON (Logstash) output, configurable levels, custom writers.</div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-green">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/server</div>
+                            <div class="package-desc">Gin router setup with graceful shutdown, production mode, and optional access logging.</div>
+                        </div>
                     </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--green-dim); color: var(--green);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-cyan">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/server/chi</div>
+                            <div class="package-desc">Chi router configuration with standard middleware, configurable timeouts, and graceful shutdown.</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="package-name">pkg/server</div>
-                        <div class="package-desc">Gin router setup with graceful shutdown, production mode, and optional access logging.</div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-green">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/healthcheck</div>
+                            <div class="package-desc">Kubernetes-compatible /healthz/readiness and /healthz/liveness endpoints with custom check functions.</div>
+                        </div>
                     </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--cyan-dim); color: var(--cyan);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-orange">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/prometheus</div>
+                            <div class="package-desc">Automatic /metrics endpoint registration for Prometheus format metrics on Gin and Chi.</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="package-name">pkg/server/chi</div>
-                        <div class="package-desc">Chi router configuration with standard middleware, configurable timeouts, and graceful shutdown.</div>
-                    </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--green-dim); color: var(--green);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                    </div>
-                    <div>
-                        <div class="package-name">pkg/healthcheck</div>
-                        <div class="package-desc">Kubernetes-compatible /healthz/readiness and /healthz/liveness endpoints with custom check functions.</div>
-                    </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--orange-dim); color: var(--orange);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    </div>
-                    <div>
-                        <div class="package-name">pkg/prometheus</div>
-                        <div class="package-desc">Automatic /metrics endpoint registration for Prometheus format metrics on Gin and Chi.</div>
-                    </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--pink-dim); color: var(--pink);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                    </div>
-                    <div>
-                        <div class="package-name">pkg/middleware</div>
-                        <div class="package-desc">Request logging (with skip paths), CORS, panic recovery, and request timeout middleware.</div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-pink">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/middleware</div>
+                            <div class="package-desc">Request logging (with skip paths), CORS, panic recovery, and request timeout middleware.</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <h3 style="font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 16px;" class="reveal">Application Utilities</h3>
-            <div class="packages-grid reveal">
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--accent-dim); color: var(--accent);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <!-- Utilities -->
+            <div class="tab-content" data-tab-content="pkg-util">
+                <div class="packages-grid">
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-accent">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/httputil</div>
+                            <div class="package-desc">WriteJSON, WriteError, WritePaginated with consistent JSON envelopes and error formatting.</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="package-name">pkg/httputil</div>
-                        <div class="package-desc">WriteJSON, WriteError, WritePaginated with consistent JSON envelopes and error formatting.</div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-orange">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/passwords</div>
+                            <div class="package-desc">Bcrypt wrapper with configurable cost (default 12). Hash and Check for secure password handling.</div>
+                        </div>
+                    </div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-cyan">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/canonical</div>
+                            <div class="package-desc">URL normalization, tracking parameter stripping, SHA-256 deduplication hashes. Thread-safe.</div>
+                        </div>
+                    </div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-accent">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/envconfig</div>
+                            <div class="package-desc">Typed env helpers: Required, Optional, OptionalBool, OptionalStringSlice, ResolveAbsPath.</div>
+                        </div>
+                    </div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-green">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/dbutil</div>
+                            <div class="package-desc">sql.DB setup with functional options. Defaults: 25 open, 10 idle, 5m lifetime, 2m idle time.</div>
+                        </div>
+                    </div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-green">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/mongodb</div>
+                            <div class="package-desc">MongoDB client wrapper with CSFLE auto-encryption support. Functional options for ping timeout, app name, direct connection.</div>
+                        </div>
+                    </div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-orange">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/redis</div>
+                            <div class="package-desc">Redis client with standalone and Sentinel failover. Configurable pool size, timeouts, and idle connections.</div>
+                        </div>
+                    </div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-pink">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/uploads</div>
+                            <div class="package-desc">File storage with MIME validation, magic-byte checks, UUID filenames. Images (10MB) and audio (50MB).</div>
+                        </div>
                     </div>
                 </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--orange-dim); color: var(--orange);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+
+            <!-- Auth -->
+            <div class="tab-content" data-tab-content="pkg-auth">
+                <div class="packages-grid">
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-cyan">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/oauth2</div>
+                            <div class="package-desc">Core OAuth2 utilities with PKCE verifier/challenge generation and cryptographic state parameter creation.</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="package-name">pkg/passwords</div>
-                        <div class="package-desc">Bcrypt wrapper with configurable cost (default 12). Hash and Check for secure password handling.</div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-orange">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/oauth2/google</div>
+                            <div class="package-desc">Google OAuth2 provider with token exchange, user profile retrieval, and ID token verification.</div>
+                        </div>
                     </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--cyan-dim); color: var(--cyan);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-                    </div>
-                    <div>
-                        <div class="package-name">pkg/canonical</div>
-                        <div class="package-desc">URL normalization, tracking parameter stripping, SHA-256 deduplication hashes. Thread-safe.</div>
-                    </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--green-dim); color: var(--green);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                    </div>
-                    <div>
-                        <div class="package-name">pkg/dbutil</div>
-                        <div class="package-desc">sql.DB setup with functional options. Defaults: 25 open, 10 idle, 5m lifetime, 2m idle time.</div>
-                    </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--pink-dim); color: var(--pink);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    </div>
-                    <div>
-                        <div class="package-name">pkg/uploads</div>
-                        <div class="package-desc">File storage with MIME validation, magic-byte checks, UUID filenames. Images (10MB) and audio (50MB).</div>
-                    </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--accent-dim); color: var(--accent);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                    </div>
-                    <div>
-                        <div class="package-name">pkg/envconfig</div>
-                        <div class="package-desc">Typed env helpers: Required, Optional, OptionalBool, OptionalStringSlice, ResolveAbsPath.</div>
-                    </div>
-                </div>
-                <div class="package-card">
-                    <div class="package-icon" style="background: var(--cyan-dim); color: var(--cyan);">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                    </div>
-                    <div>
-                        <div class="package-name">pkg/oauth2</div>
-                        <div class="package-desc">OAuth2 with PKCE, state generation, Google and Apple provider support, token exchange.</div>
+                    <div class="glass-card package-card">
+                        <div class="package-icon feature-icon-accent">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 00-3 3v12a3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3H6a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3V6a3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3h12a3 3 0 003-3 3 3 0 00-3-3z"/></svg>
+                        </div>
+                        <div>
+                            <div class="package-name">pkg/oauth2/apple</div>
+                            <div class="package-desc">Apple Sign In with client secret JWT generation, token exchange, and identity token verification.</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Quick Start -->
-        <section id="quickstart">
+        <!-- ==================== QUICK START ==================== -->
+        <section class="section" id="quickstart">
             <div class="section-label reveal">Quick Start</div>
             <h2 class="section-title reveal">Up and running in seconds</h2>
             <p class="section-desc reveal">
                 Set up a production-ready HTTP server with health checks, metrics, and structured logging.
             </p>
-            <div class="code-section reveal">
-                <div class="code-info">
-                    <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">Chi Router Setup</h3>
-                    <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 24px;">
-                        A complete server with health checks, Prometheus metrics, structured logging, middleware, and graceful shutdown &mdash; in under 30 lines.
-                    </p>
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 6px; height: 6px; background: var(--green); border-radius: 50;"></div>
-                            <span style="font-size: 13px; color: var(--text-secondary);">Graceful shutdown with configurable timeout</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 6px; height: 6px; background: var(--green); border-radius: 50%;"></div>
-                            <span style="font-size: 13px; color: var(--text-secondary);">Kubernetes-ready health endpoints</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 6px; height: 6px; background: var(--green); border-radius: 50%;"></div>
-                            <span style="font-size: 13px; color: var(--text-secondary);">Prometheus metrics out of the box</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 6px; height: 6px; background: var(--green); border-radius: 50%;"></div>
-                            <span style="font-size: 13px; color: var(--text-secondary);">Production middleware stack included</span>
-                        </div>
+
+            <div class="tabs-bar reveal" id="quickstart-tabs">
+                <button class="tab-btn tab-btn-active" data-tab="qs-chi">Chi Router</button>
+                <button class="tab-btn" data-tab="qs-gin">Gin Router</button>
+                <button class="tab-btn" data-tab="qs-logger">Logger</button>
+            </div>
+
+            <!-- Chi Router -->
+            <div class="tab-content tab-content-active reveal" data-tab-content="qs-chi">
+                <div class="code-layout">
+                    <div>
+                        <h3 class="code-info-title">Chi Router Setup</h3>
+                        <p class="code-info-desc">
+                            A complete server with health checks, Prometheus metrics, structured logging, middleware, and graceful shutdown &mdash; in under 30 lines.
+                        </p>
+                        <ul class="code-info-list">
+                            <li class="code-info-item"><span class="code-info-dot"></span> Graceful shutdown with configurable timeout</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Kubernetes-ready health endpoints</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Prometheus metrics out of the box</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Production middleware stack included</li>
+                        </ul>
                     </div>
-                </div>
-                <div class="code-block">
-                    <div class="code-header">
-                        <div class="code-dots">
-                            <div class="code-dot"></div>
-                            <div class="code-dot"></div>
-                            <div class="code-dot"></div>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <div class="code-dots">
+                                <div class="code-dot"></div>
+                                <div class="code-dot"></div>
+                                <div class="code-dot"></div>
+                            </div>
+                            <div class="code-header-right">
+                                <span class="code-filename">main.go</span>
+                                <button class="copy-btn" data-copy-code="chi-code" title="Copy code">
+                                    <svg class="icon-clipboard" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    <svg class="icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <span class="copy-tooltip">Copied!</span>
+                                </button>
+                            </div>
                         </div>
-                        <span class="code-filename">main.go</span>
-                    </div>
-                    <div class="code-content">
+                        <div class="code-content" id="chi-code">
 <pre><span class="kw">package</span> main
 
 <span class="kw">import</span> (
@@ -1218,11 +1802,11 @@
 )
 
 <span class="kw">func</span> <span class="fn">main</span>() {
-    logger.<span class="fn">SetupLogger</span>(logger.<span class="typ">ConfigSchema</span>{
+    logger.<span class="fn">SetupLogger</span>(logger.<span class="typ">Config</span>{
         Level: <span class="fn">int8</span>(zerolog.InfoLevel),
     })
 
-    srv, router := chi.<span class="fn">Setup</span>(chi.<span class="typ">ConfigSchema</span>{
+    srv, router := chi.<span class="fn">Setup</span>(chi.<span class="typ">Config</span>{
         Port:      <span class="str">"8080"</span>,
         AccessLog: <span class="kw">true</span>,
     })
@@ -1234,251 +1818,555 @@
 
     chi.<span class="fn">Start</span>(srv)
 }</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gin Router -->
+            <div class="tab-content" data-tab-content="qs-gin">
+                <div class="code-layout">
+                    <div>
+                        <h3 class="code-info-title">Gin Router Setup</h3>
+                        <p class="code-info-desc">
+                            The same production-ready setup using Gin. Swap routers with minimal code changes &mdash; health checks and metrics work identically.
+                        </p>
+                        <ul class="code-info-list">
+                            <li class="code-info-item"><span class="code-info-dot"></span> Gin production mode with recovery</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Same health check and metrics API</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Protobuf + JSON request handling</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Configurable server timeouts</li>
+                        </ul>
+                    </div>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <div class="code-dots">
+                                <div class="code-dot"></div>
+                                <div class="code-dot"></div>
+                                <div class="code-dot"></div>
+                            </div>
+                            <div class="code-header-right">
+                                <span class="code-filename">main.go</span>
+                                <button class="copy-btn" data-copy-code="gin-code" title="Copy code">
+                                    <svg class="icon-clipboard" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    <svg class="icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <span class="copy-tooltip">Copied!</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="code-content" id="gin-code">
+<pre><span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/server"</span>
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/healthcheck"</span>
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/prometheus"</span>
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/logger"</span>
+    <span class="str">"github.com/rs/zerolog"</span>
+)
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    logger.<span class="fn">SetupLogger</span>(logger.<span class="typ">Config</span>{
+        Level: <span class="fn">int8</span>(zerolog.InfoLevel),
+    })
+
+    srv, router := server.<span class="fn">Setup</span>(server.<span class="typ">Config</span>{
+        Port:      <span class="str">"8080"</span>,
+        AccessLog: <span class="kw">true</span>,
+    })
+
+    healthcheck.<span class="fn">Register</span>(router)
+    prometheus.<span class="fn">Register</span>(router)
+
+    router.<span class="fn">GET</span>(<span class="str">"/api/hello"</span>, yourHandler)
+
+    server.<span class="fn">Start</span>(srv)
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logger Config -->
+            <div class="tab-content" data-tab-content="qs-logger">
+                <div class="code-layout">
+                    <div>
+                        <h3 class="code-info-title">Logger Configuration</h3>
+                        <p class="code-info-desc">
+                            Fine-grained control over structured logging output. Switch between human-readable console and JSON (Logstash) formats.
+                        </p>
+                        <ul class="code-info-list">
+                            <li class="code-info-item"><span class="code-info-dot"></span> Console or JSON output modes</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Configurable log levels per-instance</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Optional caller and timestamp</li>
+                            <li class="code-info-item"><span class="code-info-dot"></span> Custom io.Writer support</li>
+                        </ul>
+                    </div>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <div class="code-dots">
+                                <div class="code-dot"></div>
+                                <div class="code-dot"></div>
+                                <div class="code-dot"></div>
+                            </div>
+                            <div class="code-header-right">
+                                <span class="code-filename">logging.go</span>
+                                <button class="copy-btn" data-copy-code="logger-code" title="Copy code">
+                                    <svg class="icon-clipboard" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    <svg class="icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <span class="copy-tooltip">Copied!</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="code-content" id="logger-code">
+<pre><span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="str">"github.com/PhilipKram/gms-foundation/pkg/logger"</span>
+    <span class="str">"github.com/rs/zerolog"</span>
+)
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    <span class="cm">// Global logger (console, colored output)</span>
+    logger.<span class="fn">SetupLogger</span>(logger.<span class="typ">Config</span>{
+        Level:   <span class="fn">int8</span>(zerolog.DebugLevel),
+        Console: <span class="kw">true</span>,
+    })
+
+    <span class="cm">// Independent JSON logger for production</span>
+    log := logger.<span class="fn">New</span>(logger.<span class="typ">Config</span>{
+        Level:     <span class="fn">int8</span>(zerolog.InfoLevel),
+        Console:   <span class="kw">false</span>,
+        Caller:    <span class="kw">true</span>,
+        Timestamp: <span class="kw">true</span>,
+    })
+
+    log.<span class="fn">Info</span>().<span class="fn">Str</span>(<span class="str">"service"</span>, <span class="str">"api"</span>).<span class="fn">Msg</span>(<span class="str">"started"</span>)
+}</pre>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Architecture -->
-        <section id="architecture">
+        <!-- ==================== ARCHITECTURE ==================== -->
+        <section class="section" id="architecture">
             <div class="section-label reveal">Architecture</div>
             <h2 class="section-title reveal">Layered package design</h2>
             <p class="section-desc reveal">
                 Clean separation between infrastructure, application utilities, and authentication concerns.
             </p>
 
-            <div class="arch-diagram reveal">
-                <div class="arch-layer">
-                    <div class="arch-layer-label">Infrastructure Layer</div>
-                    <div class="arch-items">
-                        <span class="arch-item infra">server</span>
-                        <span class="arch-item infra">server/chi</span>
-                        <span class="arch-item infra">logger</span>
-                        <span class="arch-item infra">healthcheck</span>
-                        <span class="arch-item infra">prometheus</span>
-                        <span class="arch-item infra">middleware</span>
+            <div class="arch-grid reveal">
+                <div class="arch-diagram">
+                    <div class="arch-layer">
+                        <div class="arch-layer-label">Infrastructure Layer</div>
+                        <div class="arch-items">
+                            <span class="arch-item arch-item-infra">server</span>
+                            <span class="arch-item arch-item-infra">server/chi</span>
+                            <span class="arch-item arch-item-infra">logger</span>
+                            <span class="arch-item arch-item-infra">healthcheck</span>
+                            <span class="arch-item arch-item-infra">prometheus</span>
+                            <span class="arch-item arch-item-infra">middleware</span>
+                        </div>
+                    </div>
+                    <div class="arch-connector">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                    </div>
+                    <div class="arch-layer">
+                        <div class="arch-layer-label">Application Utilities</div>
+                        <div class="arch-items">
+                            <span class="arch-item arch-item-util">httputil</span>
+                            <span class="arch-item arch-item-util">passwords</span>
+                            <span class="arch-item arch-item-util">canonical</span>
+                            <span class="arch-item arch-item-util">dbutil</span>
+                            <span class="arch-item arch-item-util">mongodb</span>
+                            <span class="arch-item arch-item-util">redis</span>
+                            <span class="arch-item arch-item-util">uploads</span>
+                            <span class="arch-item arch-item-util">envconfig</span>
+                        </div>
+                    </div>
+                    <div class="arch-connector">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                    </div>
+                    <div class="arch-layer">
+                        <div class="arch-layer-label">Authentication</div>
+                        <div class="arch-items">
+                            <span class="arch-item arch-item-auth">oauth2</span>
+                            <span class="arch-item arch-item-auth">oauth2/google</span>
+                            <span class="arch-item arch-item-auth">oauth2/apple</span>
+                        </div>
                     </div>
                 </div>
-                <div class="arch-connector">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-                </div>
-                <div class="arch-layer">
-                    <div class="arch-layer-label">Application Utilities</div>
-                    <div class="arch-items">
-                        <span class="arch-item util">httputil</span>
-                        <span class="arch-item util">passwords</span>
-                        <span class="arch-item util">canonical</span>
-                        <span class="arch-item util">dbutil</span>
-                        <span class="arch-item util">uploads</span>
-                        <span class="arch-item util">envconfig</span>
-                    </div>
-                </div>
-                <div class="arch-connector">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-                </div>
-                <div class="arch-layer">
-                    <div class="arch-layer-label">Authentication</div>
-                    <div class="arch-items">
-                        <span class="arch-item auth">oauth2</span>
-                        <span class="arch-item auth">oauth2/google</span>
-                        <span class="arch-item auth">oauth2/apple</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Router Compatibility -->
-            <h3 style="font-size: 20px; font-weight: 600; margin-top: 64px; margin-bottom: 8px;" class="reveal">Router Compatibility</h3>
-            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;" class="reveal">
-                First-class support for both major Go routers. Use the API that fits your stack.
-            </p>
-            <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;" class="reveal">
-                <table class="compat-table">
-                    <thead>
-                        <tr>
-                            <th>Router</th>
-                            <th>Server Setup</th>
-                            <th>Health Checks</th>
-                            <th>Metrics</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="color: var(--text-primary); font-weight: 500;">Chi <span style="color: var(--text-muted)">v5</span></td>
-                            <td>pkg/server/chi</td>
-                            <td>healthcheck.RegisterChi()</td>
-                            <td>prometheus.RegisterChi()</td>
-                        </tr>
-                        <tr>
-                            <td style="color: var(--text-primary); font-weight: 500;">Gin <span style="color: var(--text-muted)">v1</span></td>
-                            <td>pkg/server</td>
-                            <td>healthcheck.Register()</td>
-                            <td>prometheus.Register()</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="compat-card">
+                    <div class="compat-card-header">
+                        <h3 class="compat-card-title">Router Compatibility</h3>
+                        <p class="compat-card-desc">First-class support for both major Go routers.</p>
+                    </div>
+                    <table class="compat-table">
+                        <thead>
+                            <tr>
+                                <th>Router</th>
+                                <th>Server Setup</th>
+                                <th>Health Checks</th>
+                                <th>Metrics</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="compat-router-name">Chi</span> <span class="compat-version">v5</span></td>
+                                <td>pkg/server/chi</td>
+                                <td>healthcheck.RegisterChi()</td>
+                                <td>prometheus.RegisterChi()</td>
+                            </tr>
+                            <tr>
+                                <td><span class="compat-router-name">Gin</span> <span class="compat-version">v1</span></td>
+                                <td>pkg/server</td>
+                                <td>healthcheck.Register()</td>
+                                <td>prometheus.Register()</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
-        <!-- Tech Stack -->
-        <section id="tech">
+        <!-- ==================== TECH STACK ==================== -->
+        <section class="section" id="tech">
             <div class="section-label reveal">Tech Stack</div>
             <h2 class="section-title reveal">Built on proven technologies</h2>
             <p class="section-desc reveal">
                 Carefully selected dependencies that are widely adopted, well-maintained, and production-tested.
             </p>
-            <div class="tech-grid reveal">
-                <div class="tech-item">
+            <div class="bento-grid tech-bento reveal">
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--cyan-dim); color: var(--cyan);">Go</div>
                     <div>
                         <div class="tech-name">Go</div>
                         <div class="tech-version">v1.24</div>
                     </div>
                 </div>
-                <div class="tech-item">
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--green-dim); color: var(--green);">Gi</div>
                     <div>
                         <div class="tech-name">Gin</div>
                         <div class="tech-version">v1.11.0</div>
                     </div>
                 </div>
-                <div class="tech-item">
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--accent-dim); color: var(--accent);">Ch</div>
                     <div>
                         <div class="tech-name">Chi</div>
                         <div class="tech-version">v5.2.5</div>
                     </div>
                 </div>
-                <div class="tech-item">
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--orange-dim); color: var(--orange);">Zl</div>
                     <div>
                         <div class="tech-name">Zerolog</div>
                         <div class="tech-version">v1.34.0</div>
                     </div>
                 </div>
-                <div class="tech-item">
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--pink-dim); color: var(--pink);">Pr</div>
                     <div>
                         <div class="tech-name">Prometheus</div>
                         <div class="tech-version">v1.23.2</div>
                     </div>
                 </div>
-                <div class="tech-item">
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--cyan-dim); color: var(--cyan);">Jw</div>
                     <div>
                         <div class="tech-name">JWT</div>
                         <div class="tech-version">v5.3.1</div>
                     </div>
                 </div>
-                <div class="tech-item">
+                <div class="glass-card tech-item">
+                    <div class="tech-icon" style="background: var(--green-dim); color: var(--green);">Mg</div>
+                    <div>
+                        <div class="tech-name">MongoDB</div>
+                        <div class="tech-version">v2.5.0</div>
+                    </div>
+                </div>
+                <div class="glass-card tech-item">
+                    <div class="tech-icon" style="background: var(--orange-dim); color: var(--orange);">Rd</div>
+                    <div>
+                        <div class="tech-name">Redis</div>
+                        <div class="tech-version">v9.18.0</div>
+                    </div>
+                </div>
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--green-dim); color: var(--green);">My</div>
                     <div>
                         <div class="tech-name">MySQL Driver</div>
                         <div class="tech-version">v1.9.3</div>
                     </div>
                 </div>
-                <div class="tech-item">
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--accent-dim); color: var(--accent);">Cr</div>
                     <div>
                         <div class="tech-name">x/crypto</div>
                         <div class="tech-version">v0.48.0</div>
                     </div>
                 </div>
-                <div class="tech-item">
-                    <div class="tech-icon" style="background: var(--orange-dim); color: var(--orange);">Pb</div>
-                    <div>
-                        <div class="tech-name">Protobuf</div>
-                        <div class="tech-version">v1.36.11</div>
-                    </div>
-                </div>
-                <div class="tech-item">
+                <div class="glass-card tech-item">
                     <div class="tech-icon" style="background: var(--pink-dim); color: var(--pink);">Uu</div>
                     <div>
                         <div class="tech-name">UUID</div>
                         <div class="tech-version">v1.6.0</div>
                     </div>
                 </div>
+                <div class="glass-card tech-item">
+                    <div class="tech-icon" style="background: var(--orange-dim); color: var(--orange);">Pb</div>
+                    <div>
+                        <div class="tech-name">Protobuf</div>
+                        <div class="tech-version">v1.36.11</div>
+                    </div>
+                </div>
             </div>
 
             <!-- CI/CD -->
-            <h3 style="font-size: 20px; font-weight: 600; margin-top: 64px; margin-bottom: 12px;" class="reveal">CI/CD & Quality</h3>
-            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;" class="reveal">
+            <h3 class="ci-subtitle reveal">CI/CD &amp; Quality</h3>
+            <p class="ci-desc reveal">
                 Automated pipelines ensure every change meets quality standards.
             </p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;" class="reveal">
-                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">GitHub Actions</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Automated testing on push & PR</div>
+            <div class="ci-grid reveal">
+                <div class="glass-card ci-item">
+                    <div class="ci-item-name">GitHub Actions</div>
+                    <div class="ci-item-desc">Automated testing on push &amp; PR</div>
                 </div>
-                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">golangci-lint v2</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Comprehensive Go linting</div>
+                <div class="glass-card ci-item">
+                    <div class="ci-item-name">golangci-lint v2</div>
+                    <div class="ci-item-desc">Comprehensive Go linting</div>
                 </div>
-                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">CodeQL Analysis</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Automated security scanning</div>
+                <div class="glass-card ci-item">
+                    <div class="ci-item-name">CodeQL Analysis</div>
+                    <div class="ci-item-desc">Automated security scanning</div>
                 </div>
-                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Race Detection</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Concurrency safety testing</div>
+                <div class="glass-card ci-item">
+                    <div class="ci-item-name">Race Detection</div>
+                    <div class="ci-item-desc">Concurrency safety testing</div>
                 </div>
-                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Codecov</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Coverage tracking & reporting</div>
+                <div class="glass-card ci-item">
+                    <div class="ci-item-name">Codecov</div>
+                    <div class="ci-item-desc">Coverage tracking &amp; reporting</div>
                 </div>
-                <div class="tech-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Dependabot</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Automated dependency updates</div>
+                <div class="glass-card ci-item">
+                    <div class="ci-item-name">Dependabot</div>
+                    <div class="ci-item-desc">Automated dependency updates</div>
                 </div>
             </div>
         </section>
 
-        <!-- Footer -->
-        <footer>
+        <!-- ==================== FOOTER ==================== -->
+        <footer class="footer">
             <div class="footer-inner">
-                <div class="footer-left">
-                    <span class="footer-text">GMS Foundation &mdash; MIT License &copy; 2024&ndash;2026 Philip Kramer</span>
+                <div class="footer-brand">
+                    <div class="footer-brand-name">
+                        <div class="nav-logo-icon">G</div>
+                        GMS Foundation
+                    </div>
+                    <p class="footer-brand-text">Production-ready Go packages for building robust HTTP services.</p>
+                    <div class="footer-badges">
+                        <span class="footer-badge">MIT License</span>
+                        <span class="footer-badge">Go 1.24</span>
+                        <span class="footer-badge">v0.1.0</span>
+                    </div>
                 </div>
-                <div class="footer-links">
-                    <a href="https://github.com/PhilipKram/gms-foundation" target="_blank">GitHub</a>
-                    <a href="https://pkg.go.dev/github.com/PhilipKram/gms-foundation" target="_blank">Go Docs</a>
-                    <a href="https://github.com/PhilipKram/gms-foundation/blob/main/LICENSE" target="_blank">License</a>
+                <div>
+                    <div class="footer-col-title">Resources</div>
+                    <div class="footer-col-links">
+                        <a href="https://github.com/PhilipKram/gms-foundation" class="footer-link" target="_blank" rel="noopener">GitHub</a>
+                        <a href="https://pkg.go.dev/github.com/PhilipKram/gms-foundation" class="footer-link" target="_blank" rel="noopener">Go Docs</a>
+                        <a href="https://github.com/PhilipKram/gms-foundation/blob/main/LICENSE" class="footer-link" target="_blank" rel="noopener">License</a>
+                    </div>
                 </div>
+                <div>
+                    <div class="footer-col-title">Sections</div>
+                    <div class="footer-col-links">
+                        <a href="#features" class="footer-link">Features</a>
+                        <a href="#packages" class="footer-link">Packages</a>
+                        <a href="#quickstart" class="footer-link">Quick Start</a>
+                        <a href="#architecture" class="footer-link">Architecture</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom container">
+                <span class="footer-copyright">GMS Foundation &mdash; MIT License &copy; 2024&ndash;2026 Philip Kramer</span>
+                <button class="back-to-top" id="back-to-top">
+                    Back to top
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                </button>
             </div>
         </footer>
     </div>
 
     <script>
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            navbar.classList.toggle('scrolled', window.scrollY > 20);
-        });
+        (function() {
+            'use strict';
 
-        // Scroll reveal
-        const revealElements = document.querySelectorAll('.reveal');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry, i) => {
-                if (entry.isIntersecting) {
-                    setTimeout(() => {
-                        entry.target.classList.add('visible');
-                    }, i * 60);
-                    observer.unobserve(entry.target);
-                }
+            /* ---- Mobile nav ---- */
+            const hamburger = document.getElementById('nav-hamburger');
+            const overlay = document.getElementById('nav-overlay');
+            const mobile = document.getElementById('nav-mobile');
+            let navOpen = false;
+
+            function toggleNav(open) {
+                navOpen = typeof open === 'boolean' ? open : !navOpen;
+                hamburger.classList.toggle('nav-hamburger-open', navOpen);
+                overlay.classList.toggle('nav-overlay-visible', navOpen);
+                mobile.classList.toggle('nav-mobile-open', navOpen);
+                document.body.classList.toggle('body-locked', navOpen);
+            }
+
+            hamburger.addEventListener('click', function() { toggleNav(); });
+            overlay.addEventListener('click', function() { toggleNav(false); });
+            document.querySelectorAll('[data-mobile-link]').forEach(function(link) {
+                link.addEventListener('click', function() { toggleNav(false); });
             });
-        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-        revealElements.forEach(el => observer.observe(el));
+            /* ---- Navbar scroll ---- */
+            var navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', function() {
+                navbar.classList.toggle('nav-scrolled', window.scrollY > 20);
+            }, { passive: true });
 
-        // Smooth scroll for nav links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+            /* ---- Active section indicator ---- */
+            var navLinks = document.querySelectorAll('[data-nav]');
+            var sections = [];
+            navLinks.forEach(function(link) {
+                var id = link.getAttribute('href').slice(1);
+                var el = document.getElementById(id);
+                if (el) sections.push({ id: id, el: el, link: link });
             });
-        });
+
+            var sectionObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(function(l) { l.classList.remove('nav-link-active'); });
+                        sections.forEach(function(s) {
+                            if (s.el === entry.target) s.link.classList.add('nav-link-active');
+                        });
+                    }
+                });
+            }, { threshold: 0.2, rootMargin: '-64px 0px -40% 0px' });
+
+            sections.forEach(function(s) { sectionObserver.observe(s.el); });
+
+            /* ---- Scroll reveal ---- */
+            var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var revealEls = document.querySelectorAll('.reveal');
+
+            if (prefersReduced) {
+                revealEls.forEach(function(el) { el.classList.add('reveal-visible'); });
+            } else {
+                var revealObserver = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('reveal-visible');
+                            revealObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+                revealEls.forEach(function(el) { revealObserver.observe(el); });
+            }
+
+            /* ---- Counter animation ---- */
+            var counters = document.querySelectorAll('[data-count]');
+            var counterObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (!entry.isIntersecting) return;
+                    var el = entry.target;
+                    var target = parseInt(el.getAttribute('data-count'), 10);
+                    var start = 0;
+                    var duration = 1200;
+                    var startTime = null;
+
+                    function step(ts) {
+                        if (!startTime) startTime = ts;
+                        var progress = Math.min((ts - startTime) / duration, 1);
+                        var ease = 1 - Math.pow(1 - progress, 3);
+                        el.textContent = Math.round(start + (target - start) * ease);
+                        if (progress < 1) requestAnimationFrame(step);
+                    }
+
+                    if (prefersReduced) {
+                        el.textContent = target;
+                    } else {
+                        requestAnimationFrame(step);
+                    }
+                    counterObserver.unobserve(el);
+                });
+            }, { threshold: 0.5 });
+
+            counters.forEach(function(c) { counterObserver.observe(c); });
+
+            /* ---- Tabs ---- */
+            document.querySelectorAll('.tabs-bar').forEach(function(bar) {
+                var btns = bar.querySelectorAll('.tab-btn');
+                btns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var tabId = btn.getAttribute('data-tab');
+                        btns.forEach(function(b) { b.classList.remove('tab-btn-active'); });
+                        btn.classList.add('tab-btn-active');
+
+                        var parent = bar.parentElement;
+                        parent.querySelectorAll('.tab-content').forEach(function(tc) {
+                            tc.classList.remove('tab-content-active');
+                        });
+                        var target = parent.querySelector('[data-tab-content="' + tabId + '"]');
+                        if (target) target.classList.add('tab-content-active');
+                    });
+                });
+            });
+
+            /* ---- Copy to clipboard ---- */
+            document.querySelectorAll('[data-copy]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var text = btn.getAttribute('data-copy');
+                    navigator.clipboard.writeText(text).then(function() {
+                        showCopied(btn);
+                    });
+                });
+            });
+
+            document.querySelectorAll('[data-copy-code]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = btn.getAttribute('data-copy-code');
+                    var block = document.getElementById(id);
+                    if (!block) return;
+                    var text = block.textContent;
+                    navigator.clipboard.writeText(text).then(function() {
+                        showCopied(btn);
+                    });
+                });
+            });
+
+            function showCopied(btn) {
+                btn.classList.add('copy-btn-copied');
+                setTimeout(function() {
+                    btn.classList.remove('copy-btn-copied');
+                }, 2000);
+            }
+
+            /* ---- Smooth scroll ---- */
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            /* ---- Back to top ---- */
+            document.getElementById('back-to-top').addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+            });
+        })();
     </script>
 </body>
 </html>

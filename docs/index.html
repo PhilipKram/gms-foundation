@@ -1136,6 +1136,24 @@
                     </div>
                 </div>
                 <div class="package-card">
+                    <div class="package-icon" style="background: var(--green-dim); color: var(--green);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/mongodb</div>
+                        <div class="package-desc">MongoDB client wrapper with CSFLE auto-encryption support. Functional options for ping timeout, app name, direct connection.</div>
+                    </div>
+                </div>
+                <div class="package-card">
+                    <div class="package-icon" style="background: var(--orange-dim); color: var(--orange);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    </div>
+                    <div>
+                        <div class="package-name">pkg/redis</div>
+                        <div class="package-desc">Redis client with standalone and Sentinel failover. Configurable pool size, timeouts, and idle connections.</div>
+                    </div>
+                </div>
+                <div class="package-card">
                     <div class="package-icon" style="background: var(--pink-dim); color: var(--pink);">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     </div>
@@ -1218,11 +1236,11 @@
 )
 
 <span class="kw">func</span> <span class="fn">main</span>() {
-    logger.<span class="fn">SetupLogger</span>(logger.<span class="typ">ConfigSchema</span>{
+    logger.<span class="fn">SetupLogger</span>(logger.<span class="typ">Config</span>{
         Level: <span class="fn">int8</span>(zerolog.InfoLevel),
     })
 
-    srv, router := chi.<span class="fn">Setup</span>(chi.<span class="typ">ConfigSchema</span>{
+    srv, router := chi.<span class="fn">Setup</span>(chi.<span class="typ">Config</span>{
         Port:      <span class="str">"8080"</span>,
         AccessLog: <span class="kw">true</span>,
     })
@@ -1269,6 +1287,8 @@
                         <span class="arch-item util">passwords</span>
                         <span class="arch-item util">canonical</span>
                         <span class="arch-item util">dbutil</span>
+                        <span class="arch-item util">mongodb</span>
+                        <span class="arch-item util">redis</span>
                         <span class="arch-item util">uploads</span>
                         <span class="arch-item util">envconfig</span>
                     </div>

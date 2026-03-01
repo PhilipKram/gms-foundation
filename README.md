@@ -2,7 +2,7 @@
 
 A collection of production-ready Go packages for building robust HTTP services. Provides structured logging, health checks, metrics, middleware, and common application utilities (JSON helpers, password hashing, URL canonicalization, database pooling, file uploads, environment config).
 
-Requires **Go 1.23+**.
+Requires **Go 1.24+**.
 
 ## Features
 

@@ -1,6 +1,7 @@
 package passwords
 
 import (
+	"errors"
 	"testing"
 
 	"golang.org/x/crypto/bcrypt"
@@ -37,8 +38,12 @@ func TestCheck_CorrectPassword(t *testing.T) {
 
 func TestCheck_WrongPassword(t *testing.T) {
 	hash, _ := Hash("correct")
-	if err := Check(hash, "wrong"); err == nil {
-		t.Error("expected error for wrong password")
+	err := Check(hash, "wrong")
+	if err == nil {
+		t.Fatal("expected error for wrong password")
+	}
+	if !errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+		t.Errorf("expected wrapped bcrypt mismatch error, got: %v", err)
 	}
 }
 

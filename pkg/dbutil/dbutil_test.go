@@ -19,6 +19,9 @@ func TestDefaultPoolConfig(t *testing.T) {
 	if cfg.ConnMaxIdleTime != 2*time.Minute {
 		t.Errorf("expected ConnMaxIdleTime 2m, got %v", cfg.ConnMaxIdleTime)
 	}
+	if !cfg.Ping {
+		t.Error("expected Ping to default to true")
+	}
 }
 
 func TestWithMaxOpenConns(t *testing.T) {
@@ -50,6 +53,17 @@ func TestWithConnMaxIdleTime(t *testing.T) {
 	WithConnMaxIdleTime(30 * time.Second)(&cfg)
 	if cfg.ConnMaxIdleTime != 30*time.Second {
 		t.Errorf("expected 30s, got %v", cfg.ConnMaxIdleTime)
+	}
+}
+
+func TestWithPing(t *testing.T) {
+	cfg := DefaultPoolConfig()
+	if !cfg.Ping {
+		t.Fatal("expected default Ping=true")
+	}
+	WithPing(false)(&cfg)
+	if cfg.Ping {
+		t.Error("expected Ping=false after WithPing(false)")
 	}
 }
 
@@ -91,6 +105,15 @@ func TestOpen_WithOptions(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error from ping")
 	}
+}
+
+func TestOpen_NoPing(t *testing.T) {
+	// With Ping disabled, Open should succeed even with an unreachable DSN.
+	db, err := Open("mysql", "bad:dsn@tcp(localhost:1)/db", WithPing(false))
+	if err != nil {
+		t.Fatalf("expected no error with ping disabled, got: %v", err)
+	}
+	_ = db.Close()
 }
 
 func TestOpen_InvalidDriver(t *testing.T) {

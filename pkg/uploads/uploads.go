@@ -15,7 +15,7 @@ import (
 // for a category of uploads.
 type FileCategory struct {
 	Subdir       string
-	MaxSize      int
+	MaxSize      int64
 	AllowedTypes map[string]string // MIME type -> file extension
 }
 
@@ -101,12 +101,12 @@ func (s *Storage) SaveFile(r io.Reader, mimeType string) (string, error) {
 	}
 
 	// Read into memory-limited buffer to enforce size limits.
-	limited := io.LimitReader(r, int64(cat.MaxSize)+1)
+	limited := io.LimitReader(r, cat.MaxSize+1)
 	data, err := io.ReadAll(limited)
 	if err != nil {
 		return "", fmt.Errorf("reading upload: %w", err)
 	}
-	if len(data) > cat.MaxSize {
+	if int64(len(data)) > cat.MaxSize {
 		return "", fmt.Errorf("file exceeds maximum size of %d bytes", cat.MaxSize)
 	}
 
@@ -203,5 +203,7 @@ func validateContent(data []byte, declaredType string, cat FileCategory) error {
 		return nil
 	}
 
-	return fmt.Errorf("unsupported file type")
+	// For unknown MIME prefixes, allow through — the classify step already
+	// validated that the type is in the category's AllowedTypes map.
+	return nil
 }

@@ -39,8 +39,22 @@ func (rw *responseWriter) Unwrap() http.ResponseWriter {
 	return rw.ResponseWriter
 }
 
+// logEvent returns a zerolog event at the appropriate level for the given HTTP status code.
+// >= 500 -> Error, >= 400 -> Warn, else -> Info.
+func logEvent(logger zerolog.Logger, status int) *zerolog.Event {
+	switch {
+	case status >= 500:
+		return logger.Error()
+	case status >= 400:
+		return logger.Warn()
+	default:
+		return logger.Info()
+	}
+}
+
 // RequestLogger creates a middleware that logs HTTP requests using zerolog.
 // It logs the method, path, status code, duration, and bytes written.
+// Log level is determined by status code: 5xx=Error, 4xx=Warn, else=Info.
 func RequestLogger(logger zerolog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +71,7 @@ func RequestLogger(logger zerolog.Logger) func(http.Handler) http.Handler {
 
 			// Log the request
 			duration := time.Since(start)
-			logger.Info().
+			logEvent(logger, wrapped.statusCode).
 				Str("method", r.Method).
 				Str("path", r.URL.Path).
 				Str("remote_addr", r.RemoteAddr).
@@ -95,7 +109,7 @@ func RequestLoggerWithSkip(logger zerolog.Logger, skipPaths []string) func(http.
 			next.ServeHTTP(wrapped, r)
 
 			duration := time.Since(start)
-			logger.Info().
+			logEvent(logger, wrapped.statusCode).
 				Str("method", r.Method).
 				Str("path", r.URL.Path).
 				Str("remote_addr", r.RemoteAddr).

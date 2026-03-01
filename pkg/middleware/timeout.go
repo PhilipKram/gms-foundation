@@ -7,7 +7,7 @@ import (
 
 // Timeout creates a middleware that enforces a request timeout.
 // If a request takes longer than the specified duration, it will be cancelled
-// and a 504 Gateway Timeout will be returned.
+// and a 503 Service Unavailable will be returned.
 //
 // This uses http.TimeoutHandler which safely serialises writes to the
 // ResponseWriter, preventing the race condition that occurs when a handler

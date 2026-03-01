@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // Required returns the value of the environment variable named by key.
-// It returns an error if the variable is not set or is empty.
+// It returns an error if the variable is not set. An explicitly set empty
+// value is returned without error; use os.LookupEnv semantics.
 func Required(key string) (string, error) {
-	v := os.Getenv(key)
-	if v == "" {
+	v, ok := os.LookupEnv(key)
+	if !ok {
 		return "", fmt.Errorf("%s environment variable is required", key)
 	}
 	return v, nil
@@ -42,6 +45,35 @@ func OptionalBool(key string, defaultValue bool) bool {
 	default:
 		return defaultValue
 	}
+}
+
+// OptionalInt returns the environment variable value parsed as an integer,
+// or defaultValue if the variable is not set, empty, or not a valid integer.
+func OptionalInt(key string, defaultValue int) int {
+	v := os.Getenv(key)
+	if v == "" {
+		return defaultValue
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return defaultValue
+	}
+	return n
+}
+
+// OptionalDuration returns the environment variable value parsed as a
+// time.Duration, or defaultValue if the variable is not set, empty, or not
+// a valid duration string.
+func OptionalDuration(key string, defaultValue time.Duration) time.Duration {
+	v := os.Getenv(key)
+	if v == "" {
+		return defaultValue
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		return defaultValue
+	}
+	return d
 }
 
 // OptionalStringSlice splits the environment variable value by separator,
